@@ -687,14 +687,14 @@ auto pretty_fn<T>::pp_var(expr const & e) -> result {
 template<class T>
 auto pretty_fn<T>::pp_sort(expr const & e) -> result {
     level u = sort_level(e);
-    if (u == mk_level_zero()) {
-        return result(T("Prop"));
-    } else if (u == mk_level_one()) {
-        return result(T("Type"));
-    } else if (optional<level> u1 = dec_level(u)) {
-        return result(max_bp()-1, group(T("Type") + space() + nest(5, pp_child(*u1))));
+    univ v = to_sort(e)->get_univ();
+
+    const auto tok = (v == univ::Kan) ? "Kan" : "Pretype";
+
+    if (u == mk_level_one()) {
+        return result(T(tok));
     } else {
-        return result(max_bp()-1, group(T("Sort") + space() + nest(5, pp_child(u))));
+        return result(max_bp()-1, group(T(tok) + space() + nest(5, pp_child(u))));
     }
 }
 template<class T>

@@ -46,6 +46,8 @@ class expr;
           |   Macro         macro
 */
 enum class expr_kind { Var, Sort, Constant, Meta, Local, App, Lambda, Pi, Let, Macro };
+enum class univ { Pretype, Kan };
+
 class expr_cell {
 protected:
     // The bits of the following field mean:
@@ -130,7 +132,7 @@ public:
     expr_cell * raw() const { return m_ptr; }
 
     friend expr mk_var(unsigned idx, tag g);
-    friend expr mk_sort(level const & l, tag g);
+    friend expr mk_sort(level const & l, tag g, univ u);
     friend expr mk_constant(name const & n, levels const & ls, tag g);
     friend expr mk_metavar(name const & n, name const & pp_n, expr const & t, tag g);
     friend expr mk_local(name const & n, name const & pp_n, expr const & t, binder_info const & bi,
@@ -331,15 +333,16 @@ public:
 
 /** \brief Sort */
 class expr_sort : public expr_cell {
-    level    m_level;
+    level m_level; univ m_univ;
     friend expr_cell;
     void dealloc();
     friend struct cache_expr_insert_fn;
     expr_sort(expr_sort const &, level const & new_level); // for hash_consing
 public:
-    expr_sort(level const & l, tag g);
+    expr_sort(level const & l, tag g, univ u);
     ~expr_sort();
     level const & get_level() const { return m_level; }
+    univ get_univ() { return m_univ; }
 };
 
 /** \brief Abstract class for macro_definitions */
@@ -493,7 +496,7 @@ inline expr mk_pi(name const & n, expr const & t, expr const & e, binder_info co
     return mk_binding(expr_kind::Pi, n, t, e, i, g);
 }
 expr mk_let(name const & n, expr const & t, expr const & v, expr const & b, tag g = nulltag);
-expr mk_sort(level const & l, tag g = nulltag);
+expr mk_sort(level const & l, tag g = nulltag, univ u = univ::Kan);
 
 expr mk_Prop();
 expr mk_Type();

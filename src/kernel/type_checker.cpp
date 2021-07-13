@@ -148,7 +148,7 @@ expr type_checker::infer_pi(expr const & _e, bool infer_only) {
         --i;
         r = mk_imax(us[i], r);
     }
-    return mk_sort(r);
+    return mk_sort(r, nulltag, to_sort(s)->get_univ());
 }
 
 expr type_checker::infer_app(expr const & e, bool infer_only) {
@@ -220,7 +220,7 @@ expr type_checker::infer_type_core(expr const & e, bool infer_only) {
         lean_unreachable();  // LCOV_EXCL_LINE
     case expr_kind::Sort:
         if (!infer_only) check_level(sort_level(e), e);
-        r = mk_sort(mk_succ(sort_level(e)));
+        r = mk_sort(mk_succ(sort_level(e)), nulltag, to_sort(e)->get_univ());
         break;
     case expr_kind::Constant:  r = infer_constant(e, infer_only);       break;
     case expr_kind::Macro:     r = infer_macro(e, infer_only);          break;
@@ -483,7 +483,7 @@ lbool type_checker::quick_is_def_eq(expr const & t, expr const & s, bool use_has
         case expr_kind::Lambda: case expr_kind::Pi:
             return to_lbool(is_def_eq_binding(t, s));
         case expr_kind::Sort:
-            return to_lbool(is_def_eq(sort_level(t), sort_level(s)));
+            return to_lbool(is_def_eq(sort_level(t), sort_level(s)) && to_sort(t)->get_univ() == to_sort(s)->get_univ());
         case expr_kind::Meta:
             lean_unreachable(); // LCOV_EXCL_LINE
         case expr_kind::Var:      case expr_kind::Local: case expr_kind::App:

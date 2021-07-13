@@ -116,18 +116,7 @@ endif()
 message(STATUS "Lean library will be installed at "
   "${CMAKE_INSTALL_PREFIX}/${LIBRARY_DIR}")
 
-if("${CMAKE_C_COMPILER}" MATCHES "emcc")
-    set(EMSCRIPTEN ON)
-    set(MULTI_THREAD OFF)
-    set(TCMALLOC OFF)
-    set(CFLAGS_EMSCRIPTEN "-Oz -O3")
-    set(LEAN_EXTRA_CXX_FLAGS "${LEAN_EXTRA_CXX_FLAGS} ${CFLAGS_EMSCRIPTEN} -D LEAN_EMSCRIPTEN")
-    set(LEAN_EXTRA_LINKER_FLAGS "${LEAN_EXTRA_LINKER_FLAGS} --memory-init-file 0 --llvm-lto 1 -s ALLOW_MEMORY_GROWTH=1 -s DISABLE_EXCEPTION_CATCHING=0 ${CFLAGS_EMSCRIPTEN}")
-    set(LEAN_JS_LIBRARY "${CMAKE_CURRENT_SOURCE_DIR}/../library" CACHE STRING
-            "location of olean files for lean.js")
-endif()
 if (CMAKE_CROSSCOMPILING_EMULATOR)
-  # emscripten likes to quote "node"
   string(REPLACE "\"" "" CMAKE_CROSSCOMPILING_EMULATOR ${CMAKE_CROSSCOMPILING_EMULATOR})
 else()
   set(CMAKE_CROSSCOMPILING_EMULATOR)
@@ -254,8 +243,6 @@ elseif (MSVC)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/O2 /Oi /Zi ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
     set(LEAN_EXTRA_LINKER_FLAGS        "/LTCG:INCREMENTAL ${LEAN_EXTRA_LINKER_FLAGS}")
     set(CMAKE_STATIC_LINKER_FLAGS      "${CMAKE_STATIC_LINKER_FLAGS} ${LEAN_EXTRA_LINKER_FLAGS}")
-elseif (EMSCRIPTEN)
-    message(STATUS "Emscripten is detected: Make sure the wraped compiler supports C++11")
 else()
     message(FATAL_ERROR "Unsupported compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif ()
@@ -273,35 +260,14 @@ elseif (MULTI_THREAD)
     set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "/MT ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 endif ()
 
-if (EMSCRIPTEN)
-    include(ExternalProject)
-    set(gmp_install_prefix ${CMAKE_CURRENT_BINARY_DIR}/gmp-root)
-    # The plethory of configure arguments only makes sure that gmp thinks sizeof(mp_limb_t) == sizeof(long) == 4
-    ExternalProject_Add(
-            gmp
-            URL https://gmplib.org/download/gmp/gmp-6.1.2.tar.bz2 https://ftp.gnu.org/gnu/gmp/gmp-6.1.2.tar.bz2
-            URL_HASH SHA256=5275bb04f4863a13516b2f39392ac5e272f5e1bb8057b18aec1c9b79d73d8fb2
-            BUILD_IN_SOURCE 1
-            CONFIGURE_COMMAND emconfigure ./configure "CC_FOR_BUILD=gcc" "CCAS=gcc -c" "CFLAGS=-m32 -DPIC ${CFLAGS_EMSCRIPTEN}" --host=x86_64-pc-linux-gnu --build=i686-pc-linux-gnu --disable-assembly --prefix=${gmp_install_prefix}
-            BUILD_COMMAND emmake make -j4
-            INSTALL_COMMAND make install
-    )
-    add_library(lean_external_deps INTERFACE)
-    target_link_libraries(lean_external_deps INTERFACE ${gmp_install_prefix}/lib/libgmp.so)
-    include_directories(lean_external_deps INTERFACE ${gmp_install_prefix}/include)
-    add_dependencies(lean_external_deps gmp)
-    set(EXTRA_LIBS lean_external_deps)
-else()
-    # GMP
-    find_package(GMP 5.0.5 REQUIRED)
-    include_directories(${GMP_INCLUDE_DIR})
-    set(EXTRA_LIBS ${EXTRA_LIBS} ${GMP_LIBRARIES})
-endif()
+
+# GMP
+find_package(GMP 5.0.5 REQUIRED)
+include_directories(${GMP_INCLUDE_DIR})
+set(EXTRA_LIBS ${EXTRA_LIBS} ${GMP_LIBRARIES})
 
 # DL
-if (EMSCRIPTEN)
-    # no dlopen
-elseif((${CYGWIN} EQUAL "1") OR (${CMAKE_SYSTEM_NAME} MATCHES "Windows"))
+if((${CYGWIN} EQUAL "1") OR (${CMAKE_SYSTEM_NAME} MATCHES "Windows"))
   # TODO(Jared): config dlopen windows support
 else()
   set(EXTRA_LIBS ${EXTRA_LIBS} dl)
@@ -419,31 +385,17 @@ add_subdirectory(frontends/lean)
 set(LEAN_OBJS ${LEAN_OBJS} $<TARGET_OBJECTS:lean_frontend>)
 add_subdirectory(init)
 set(LEAN_OBJS ${LEAN_OBJS} $<TARGET_OBJECTS:init>)
-if(EMSCRIPTEN)
-   set(LEAN_LIBRARY_TYPE SHARED)
-else()
-   set(LEAN_LIBRARY_TYPE STATIC)
-endif()
+set(LEAN_LIBRARY_TYPE STATIC)
 add_library(leanstatic ${LEAN_LIBRARY_TYPE} ${LEAN_OBJS})
 target_link_libraries(leanstatic ${EXTRA_LIBS})
 
-if(EMSCRIPTEN AND LEAN_EMSCRIPTEN_BUILD STREQUAL Test)
-# skip building main files
-else()
 add_subdirectory(shell)
-add_subdirectory(tests/shell)
-endif()
 
 function(add_exec_test name tgt)
-    if(EMSCRIPTEN)
-        target_link_libraries(${tgt} "--memory-init-file 0")
-        add_test(NAME ${name} COMMAND node --stack_size=8192 ${CMAKE_CURRENT_BINARY_DIR}/${tgt}.js)
-    else()
-        add_test(NAME ${name} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${tgt})
-    endif()
+    add_test(NAME ${name} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${tgt})
 endfunction()
 
-if(NOT BUILD_TESTING OR (EMSCRIPTEN AND LEAN_EMSCRIPTEN_BUILD STREQUAL Main))
+if(NOT BUILD_TESTING)
 # skip building standalone test binaries
 else()
 add_subdirectory(tests/util)
@@ -454,7 +406,7 @@ add_subdirectory(tests/frontends/lean)
 
 endif()
 
-if(NOT BUILD_TESTING OR (EMSCRIPTEN AND LEAN_EMSCRIPTEN_BUILD STREQUAL Main))
+if(NOT BUILD_TESTING)
 # skip building tests for main files
 else()
 # Include style check
@@ -474,22 +426,6 @@ if ((${MULTI_THREAD} MATCHES "ON") AND (${CMAKE_SYSTEM_NAME} MATCHES "Darwin"))
   set(LEAN_EXTRA_MAKE_OPTS -s40000 ${LEAN_EXTRA_MAKE_OPTS})
 endif ()
 
-if(EMSCRIPTEN)
-  # emscripten lean make yields too much output
-add_custom_target(
-    standard_lib ALL
-    COMMAND "${LEAN_SOURCE_DIR}/../bin/lean" --make ${LEAN_EXTRA_MAKE_OPTS} > /dev/null
-    DEPENDS bin_lean
-    WORKING_DIRECTORY "${LEAN_SOURCE_DIR}/../library"
-    )
-
-add_custom_target(
-    leanpkg ALL
-    COMMAND "${LEAN_SOURCE_DIR}/../bin/lean" --make ${LEAN_EXTRA_MAKE_OPTS} > /dev/null
-    DEPENDS standard_lib
-    WORKING_DIRECTORY "${LEAN_SOURCE_DIR}/../leanpkg"
-)
-else()
 add_custom_target(
     standard_lib ALL
     COMMAND "${LEAN_SOURCE_DIR}/../bin/lean" --make ${LEAN_EXTRA_MAKE_OPTS}
@@ -497,13 +433,6 @@ add_custom_target(
     WORKING_DIRECTORY "${LEAN_SOURCE_DIR}/../library"
     )
 
-add_custom_target(
-    leanpkg ALL
-    COMMAND "${LEAN_SOURCE_DIR}/../bin/lean" --make ${LEAN_EXTRA_MAKE_OPTS}
-    DEPENDS standard_lib
-    WORKING_DIRECTORY "${LEAN_SOURCE_DIR}/../leanpkg"
-)
-endif()
 endif()
 
 add_custom_target(clean-std-lib
@@ -511,36 +440,13 @@ add_custom_target(clean-std-lib
   COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/CleanOlean.cmake"
   )
 
-add_custom_target(clean-leanpkg
-  WORKING_DIRECTORY "${LEAN_SOURCE_DIR}/../leanpkg"
-  COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_MODULE_PATH}/CleanOlean.cmake"
-  )
-
 add_custom_target(clean-olean
-  DEPENDS clean-std-lib clean-leanpkg)
-
-if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
-  install(FILES "${CMAKE_SOURCE_DIR}/../bin/leanpkg.bat" "${CMAKE_SOURCE_DIR}/../bin/leanpkg.bat"
-    DESTINATION bin
-    PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
-endif()
-
-install(FILES "${CMAKE_SOURCE_DIR}/../bin/leanpkg"
-  DESTINATION bin
-  PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE)
+  DEPENDS clean-std-lib)
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/../library" DESTINATION "${LIBRARY_DIR}"
         FILES_MATCHING
         PATTERN "*.lean"
         PATTERN "*.olean"
-        PATTERN "leanpkg.toml"
-        PATTERN "*.md")
-
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/../leanpkg" DESTINATION "${LIBRARY_DIR}"
-        FILES_MATCHING
-        PATTERN "*.lean"
-        PATTERN "*.olean"
-        PATTERN "leanpkg.toml"
         PATTERN "*.md")
 
 install(DIRECTORY "${CMAKE_SOURCE_DIR}/" DESTINATION "${LEAN_EXT_INCLUDE_DIR}"

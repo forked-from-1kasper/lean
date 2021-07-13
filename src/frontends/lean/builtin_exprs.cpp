@@ -56,39 +56,32 @@ bool is_sort_wo_universe(expr const & e) {
     return is_annotation(e, *g_no_universe_annotation);
 }
 
-expr mk_sort_wo_universe(parser & p, pos_info const & pos, bool is_type) {
-    expr r = p.save_pos(mk_sort(is_type ? mk_level_one() : mk_level_zero()), pos);
-    return p.save_pos(mk_annotation(*g_no_universe_annotation, r), pos);
-}
-
-static expr parse_Type(parser & p, unsigned, expr const *, pos_info const & pos) {
-    if (p.curr_is_token(get_llevel_curly_tk())) {
-        p.next();
-        level l = mk_succ(p.parse_level());
-        p.check_token_next(get_rcurly_tk(), "invalid Type expression, '}' expected");
-        return p.save_pos(mk_sort(l), pos);
-    } else {
-        return mk_sort_wo_universe(p, pos, true);
-    }
-}
-
-static expr parse_Sort(parser & p, unsigned, expr const *, pos_info const & pos) {
+static expr parse_Sort(parser & p, pos_info const & pos, univ u) {
     if (p.curr_is_token(get_llevel_curly_tk())) {
         p.next();
         level l = p.parse_level();
-        p.check_token_next(get_rcurly_tk(), "invalid Sort expression, '}' expected");
-        return p.save_pos(mk_sort(l), pos);
+        p.check_token_next(get_rcurly_tk(), "invalid expression, '}' expected");
+        return p.save_pos(mk_sort(l, nulltag, u), pos);
     } else {
-        return mk_sort_wo_universe(p, pos, false);
+        expr r = p.save_pos(mk_sort(mk_level_zero(), nulltag, u), pos);
+        return p.save_pos(mk_annotation(*g_no_universe_annotation, r), pos);
     }
 }
 
-static expr parse_Type_star(parser & p, unsigned, expr const *, pos_info const & pos) {
-    return p.save_pos(mk_sort(mk_succ(mk_level_placeholder())), pos);
+static expr parse_Kan(parser & p, unsigned, expr const *, pos_info const & pos) {
+    return parse_Sort(p, pos, univ::Kan);
 }
 
-static expr parse_Sort_star(parser & p, unsigned, expr const *, pos_info const & pos) {
-    return p.save_pos(mk_sort(mk_level_placeholder()), pos);
+static expr parse_Pretype(parser & p, unsigned, expr const *, pos_info const & pos) {
+    return parse_Sort(p, pos, univ::Pretype);
+}
+
+static expr parse_Kan_star(parser & p, unsigned, expr const *, pos_info const & pos) {
+    return p.save_pos(mk_sort(mk_level_placeholder(), nulltag, univ::Kan), pos);
+}
+
+static expr parse_Pretype_star(parser & p, unsigned, expr const *, pos_info const & pos) {
+    return p.save_pos(mk_sort(mk_level_placeholder(), nulltag, univ::Pretype), pos);
 }
 
 static name * g_let_match_name = nullptr;
@@ -1040,10 +1033,12 @@ parse_table init_nud_table() {
     r = r.add({transition("(::)", mk_ext_action(parse_lambda_cons))}, x0);
     r = r.add({transition("fun", mk_ext_action(parse_lambda))}, x0);
     r = r.add({transition("Pi", Binders), transition(",", mk_scoped_expr_action(x0, 0, false))}, x0);
-    r = r.add({transition("Type", mk_ext_action(parse_Type))}, x0);
-    r = r.add({transition("Type*", mk_ext_action(parse_Type_star))}, x0);
-    r = r.add({transition("Sort", mk_ext_action(parse_Sort))}, x0);
-    r = r.add({transition("Sort*", mk_ext_action(parse_Sort_star))}, x0);
+    r = r.add({transition("Type", mk_ext_action(parse_Kan))}, x0);
+    r = r.add({transition("Type*", mk_ext_action(parse_Kan_star))}, x0);
+    r = r.add({transition("Kan", mk_ext_action(parse_Kan))}, x0);
+    r = r.add({transition("Kan*", mk_ext_action(parse_Kan_star))}, x0);
+    r = r.add({transition("Pretype", mk_ext_action(parse_Pretype))}, x0);
+    r = r.add({transition("Pretype*", mk_ext_action(parse_Pretype_star))}, x0);
     r = r.add({transition("let", mk_ext_action(parse_let_expr))}, x0);
     r = r.add({transition("calc", mk_ext_action(parse_calc_expr))}, x0);
     r = r.add({transition("@", mk_ext_action(parse_explicit_expr))}, x0);

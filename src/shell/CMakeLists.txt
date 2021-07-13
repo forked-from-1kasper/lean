@@ -2,65 +2,16 @@ add_executable(lean lean.cpp server.cpp)
 target_link_libraries(lean leanstatic)
 install(TARGETS lean DESTINATION bin)
 
-add_executable(lean_js lean_js.cpp lean_js_main.cpp server.cpp)
-if(${EMSCRIPTEN})
-    # This currently fails to build in the docker container
-    # skip it for now so that tests can proceed
-    set_target_properties(lean_js PROPERTIES EXCLUDE_FROM_ALL 1)
-endif()
-target_link_libraries(lean_js leanstatic)
-add_library(shell_js OBJECT lean_js.cpp server.cpp)
-
-if(${EMSCRIPTEN})
-    add_dependencies(shell_js gmp)
-    set(NODE_JS "node --stack_size=8192")
-
-    file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/lean
-            "#!/bin/sh\nLEAN_EMSCRIPTEN_PATH=${CMAKE_CURRENT_SOURCE_DIR}/../../library ${NODE_JS} ${CMAKE_CURRENT_BINARY_DIR}/lean.js \"$@\"\n")
-     execute_process(COMMAND chmod +x ${CMAKE_CURRENT_BINARY_DIR}/lean)
-
-    ADD_CUSTOM_TARGET(bin_lean ALL
-        COMMAND "${CMAKE_COMMAND}" -E make_directory "${LEAN_SOURCE_DIR}/../bin"
-        COMMAND "${CMAKE_COMMAND}" -E copy "${CMAKE_CURRENT_BINARY_DIR}/lean" "${LEAN_SOURCE_DIR}/../bin/lean"
-        DEPENDS lean
-        )
-
-    # legacy code for mkleanbook
-    # copy olean files from the library into build/emscripten/shell/library/...
-    add_custom_target(lean_js_library
-        COMMAND "${CMAKE_COMMAND}" -E remove_directory ${CMAKE_CURRENT_BINARY_DIR}/library
-        COMMAND mkdir -p ${CMAKE_CURRENT_BINARY_DIR}/library
-        COMMAND bash -c "(cd ${LEAN_JS_LIBRARY}; tar c `find . -name '*.olean'`) | (cd ${CMAKE_CURRENT_BINARY_DIR}/library; tar x)"
-        VERBATIM)
-    file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/lean_js.html DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    target_link_libraries(lean_js
-            "--embed-file library
-             --bind
-             -s WASM=0")
-    add_dependencies(lean_js lean_js_library)
-    set_target_properties(lean_js PROPERTIES COMPILE_FLAGS --bind -s NO_EXIT_RUNTIME=1)
-
-    set(LEAN_JS_OPTS "-s 'EXTRA_EXPORTED_RUNTIME_METHODS=[\"FS\"]'")
-
-    add_executable(lean_js_wasm lean_js.cpp lean_js_new.cpp server.cpp)
-    target_link_libraries(lean_js_wasm leanstatic)
-    set_target_properties(lean_js_wasm PROPERTIES LINK_FLAGS "-s WASM=1 ${LEAN_JS_OPTS}")
-
-    add_executable(lean_js_js lean_js.cpp lean_js_new.cpp server.cpp)
-    target_link_libraries(lean_js_js leanstatic)
-    set_target_properties(lean_js_js PROPERTIES LINK_FLAGS "-s WASM=0 ${LEAN_JS_OPTS}")
+if (MSVC)
+  ADD_CUSTOM_TARGET(bin_lean ALL
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:lean>" "$<TARGET_FILE_DIR:lean>/mpir.dll" "${LEAN_SOURCE_DIR}/../bin/"
+    DEPENDS lean
+  )
 else()
-  if (MSVC)
-    ADD_CUSTOM_TARGET(bin_lean ALL
-      COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:lean>" "$<TARGET_FILE_DIR:lean>/mpir.dll" "${LEAN_SOURCE_DIR}/../bin/"
-      DEPENDS lean
-    )
-  else()
-    ADD_CUSTOM_TARGET(bin_lean ALL
-      COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:lean>" "${LEAN_SOURCE_DIR}/../bin/"
-      DEPENDS lean
-    )
-  endif()
+  ADD_CUSTOM_TARGET(bin_lean ALL
+    COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:lean>" "${LEAN_SOURCE_DIR}/../bin/"
+    DEPENDS lean
+  )
 endif()
 
 add_test(NAME leanchecker
@@ -74,9 +25,7 @@ add_test(NAME leanchecker
 add_test(lean_help1    "${CMAKE_CURRENT_BINARY_DIR}/lean" --help)
 add_test(lean_help2    "${CMAKE_CURRENT_BINARY_DIR}/lean" -h)
 add_test(lean_version1 "${CMAKE_CURRENT_BINARY_DIR}/lean" --version)
-if (NOT ${EMSCRIPTEN})
 add_test(lean_version2 "${CMAKE_CURRENT_BINARY_DIR}/lean" --v)
-endif()
 add_test(lean_ghash1   "${CMAKE_CURRENT_BINARY_DIR}/lean" -g)
 add_test(lean_ghash2   "${CMAKE_CURRENT_BINARY_DIR}/lean" --githash)
 add_test(lean_path1    "${CMAKE_CURRENT_BINARY_DIR}/lean" -p)
