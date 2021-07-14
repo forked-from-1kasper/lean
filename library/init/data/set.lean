@@ -5,11 +5,12 @@ Authors: Leonardo de Moura
 -/
 prelude
 import init.meta.interactive
+import init.control.lawful
 
 universes u v
-def set (α : Type u) := α → Kan 0
+def set (α : Type u) := α → Prop
 
-def set_of {α : Type u} (p : α → Kan 0) : set α :=
+def set_of {α : Type u} (p : α → Prop) : set α :=
 p
 
 namespace set
@@ -27,7 +28,7 @@ protected def subset (s₁ s₂ : set α) :=
 instance : has_subset (set α) :=
 ⟨set.subset⟩
 
-protected def sep (p : α → Kan 0) (s : set α) : set α :=
+protected def sep (p : α → Prop) (s : set α) : set α :=
 {a | a ∈ s ∧ p a}
 
 instance : has_sep α (set α) :=
@@ -46,6 +47,9 @@ instance : has_insert α (set α) :=
 ⟨set.insert⟩
 
 instance : has_singleton α (set α) := ⟨λ a, {b | b = a}⟩
+
+instance : is_lawful_singleton α (set α) :=
+⟨λ a, funext $ λ b, propext $ or_false _⟩
 
 protected def union (s₁ s₂ : set α) : set α :=
 {a | a ∈ s₁ ∨ a ∈ s₂}
@@ -81,5 +85,11 @@ def image (f : α → β) (s : set α) : set β :=
 
 instance : functor set :=
 { map := @set.image }
+
+instance : is_lawful_functor set :=
+{ id_map := λ _ s, funext $ λ b, propext ⟨λ ⟨_, sb, rfl⟩, sb, λ sb, ⟨_, sb, rfl⟩⟩,
+  comp_map := λ _ _ _ g h s, funext $ λ c, propext
+    ⟨λ ⟨a, ⟨h₁, h₂⟩⟩, ⟨g a, ⟨⟨a, ⟨h₁, rfl⟩⟩, h₂⟩⟩,
+     λ ⟨b, ⟨⟨a, ⟨h₁, h₂⟩⟩, h₃⟩⟩, ⟨a, ⟨h₁, by dsimp; cc⟩⟩⟩ }
 
 end set

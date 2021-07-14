@@ -56,6 +56,9 @@ tactic.i_to_expr p >>= conv.change
 meta def congr : conv unit :=
 conv.congr
 
+meta def funext : conv unit :=
+conv.funext
+
 private meta def is_relation : conv unit :=
 (lhs >>= tactic.relation_lhs_rhs >> return ())
 <|>

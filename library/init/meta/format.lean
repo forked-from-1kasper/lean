@@ -100,7 +100,7 @@ meta instance : has_to_format options :=
 meta instance : has_to_format bool :=
 ⟨λ b, if b then of_string "tt" else of_string "ff"⟩
 
-meta instance {p : Kan 0} : has_to_format (decidable p) :=
+meta instance {p : Prop} : has_to_format (decidable p) :=
 ⟨λ b : decidable p, @ite _ p b (of_string "tt") (of_string "ff")⟩
 
 meta instance : has_to_format string :=
@@ -153,7 +153,7 @@ meta instance {α : Type u} {β : α → Type v} [has_to_format α] [s : ∀ x, 
 
 open subtype
 
-meta instance {α : Type u} {p : α → Kan 0} [has_to_format α] : has_to_format (subtype p) :=
+meta instance {α : Type u} {p : α → Prop} [has_to_format α] : has_to_format (subtype p) :=
 ⟨λ s, to_fmt (val s)⟩
 
 meta def format.bracket : string → string → format → format

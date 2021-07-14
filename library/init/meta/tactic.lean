@@ -8,6 +8,7 @@ import init.function init.data.option.basic init.util
 import init.control.combinators init.control.monad init.control.alternative init.control.monad_fail
 import init.data.nat.div init.meta.exceptional init.meta.format init.meta.environment
 import init.meta.pexpr init.data.repr init.data.string.basic init.meta.interaction_monad
+import init.classical
 
 open native
 
@@ -469,7 +470,7 @@ meta constant get_unused_name (n : name := `_x) (i : option nat := none) : tacti
 
     Example, given
     ```
-        rel.{l_1 l_2} : Pi (α : Type.{l_1}) (β : α -> Type.{l_2}), (Pi x : α, β x) -> (Pi x : α, β x) -> , Kan 0
+        rel.{l_1 l_2} : Pi (α : Type.{l_1}) (β : α -> Type.{l_2}), (Pi x : α, β x) -> (Pi x : α, β x) -> , Prop
         nat     : Type
         real    : Type
         vec.{l} : Pi (α : Type l) (n : nat), Type.{l1}
@@ -793,7 +794,7 @@ meta def istep {α : Type u} (line0 col0 : ℕ) (line col : ℕ) (t : tactic α)
 
 meta def is_prop (e : expr) : tactic bool :=
 do t ← infer_type e,
-   return (t = `(Kan 0))
+   return (t = `(Prop))
 
 /-- Return true iff n is the name of declaration that is a proposition. -/
 meta def is_prop_decl (n : name) : tactic bool :=
@@ -1473,6 +1474,14 @@ meta def triv : tactic unit := mk_const `trivial >>= exact
 
 notation `dec_trivial` := of_as_true (by tactic.triv)
 
+meta def by_contradiction (H : name) : tactic expr :=
+do tgt ← target,
+  (match_not tgt $> ()) <|>
+  (mk_mapp `decidable.by_contradiction [some tgt, none] >>= eapply >> skip) <|>
+  applyc ``classical.by_contradiction <|>
+  fail "tactic by_contradiction failed, target is not a proposition",
+  intro H
+
 private meta def generalizes_aux (md : transparency) : list expr → tactic unit
 | []      := skip
 | (e::es) := generalize e `x md >> generalizes_aux es
@@ -1555,7 +1564,7 @@ The produced proof term is `dite p ?m_1 ?m_2`.
 -/
 meta def by_cases (e : expr) (h : name) : tactic unit := do
 dec_e ← mk_app ``decidable [e] <|> fail "by_cases tactic failed, type is not a proposition",
-inst ← mk_instance dec_e,
+inst ← mk_instance dec_e <|> pure `(classical.prop_decidable %%e),
 tgt ← target,
 expr.sort tgt_u ← infer_type tgt >>= whnf,
 g1 ← mk_meta_var (e.imp tgt),
@@ -1564,6 +1573,25 @@ focus1 $ do
   exact $ expr.const ``dite [tgt_u] tgt e inst g1 g2,
   set_goals [g1, g2],
   all_goals' $ intro h >> skip
+
+meta def funext_core : list name → bool → tactic unit
+| []  tt       := return ()
+| ids only_ids := try $
+   do some (lhs, rhs) ← expr.is_eq <$> (target >>= whnf),
+      applyc `funext,
+      id ← if ids.empty ∨ ids.head = `_ then do
+             (expr.lam n _ _ _) ← whnf lhs
+               | pure `_,
+             return n
+           else return ids.head,
+      intro id,
+      funext_core ids.tail only_ids
+
+meta def funext : tactic unit :=
+funext_core [] ff
+
+meta def funext_lst (ids : list name) : tactic unit :=
+funext_core ids tt
 
 private meta def get_undeclared_const (env : environment) (base : name) : ℕ → name | i :=
 let n := base <.> ("_aux_" ++ repr i) in

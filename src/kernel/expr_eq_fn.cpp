@@ -107,7 +107,7 @@ class expr_eq_fn {
                 apply(let_body(a), let_body(b)) &&
                 (!CompareBinderInfo || let_name(a) == let_name(b));
         case expr_kind::Sort:
-            return sort_level(a) == sort_level(b) && to_sort(a)->get_univ() == to_sort(b)->get_univ();
+            return sort_level(a) == sort_level(b);
         case expr_kind::Macro:
             check_system();
             if (macro_def(a) != macro_def(b) || macro_num_args(a) != macro_num_args(b))

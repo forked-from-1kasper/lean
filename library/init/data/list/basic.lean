@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Leonardo de Moura
 -/
 prelude
-import init.logic init.data.nat.basic init.data.bool.basic
+import init.logic init.data.nat.basic init.data.bool.basic init.propext
 open decidable list
 
 universes u v w
@@ -40,7 +40,7 @@ list.has_dec_eq
 instance : has_append (list α) :=
 ⟨list.append⟩
 
-protected def mem : α → list α → Kan 0
+protected def mem : α → list α → Prop
 | a []       := false
 | a (b :: l) := a = b ∨ mem a l
 
@@ -137,15 +137,15 @@ def filter_map (f : α → option β) : list α → list β
   | some b := b :: filter_map l
   end
 
-def filter (p : α → Kan 0) [decidable_pred p] : list α → list α
+def filter (p : α → Prop) [decidable_pred p] : list α → list α
 | []     := []
 | (a::l) := if p a then a :: filter l else filter l
 
-def partition (p : α → Kan 0) [decidable_pred p] : list α → list α × list α
+def partition (p : α → Prop) [decidable_pred p] : list α → list α × list α
 | []     := ([], [])
 | (a::l) := let (l₁, l₂) := partition l in if p a then (a :: l₁, l₂) else (l₁, a :: l₂)
 
-def drop_while (p : α → Kan 0) [decidable_pred p] : list α → list α
+def drop_while (p : α → Prop) [decidable_pred p] : list α → list α
 | []     := []
 | (a::l) := if p a then drop_while l else a::l
 
@@ -157,15 +157,15 @@ def drop_while (p : α → Kan 0) [decidable_pred p] : list α → list α
   drop_while (not ∘ eq 1) [0, 1, 2, 3] = [1, 2, 3]
   ```
 -/
-def after (p : α → Kan 0) [decidable_pred p] : list α → list α
+def after (p : α → Prop) [decidable_pred p] : list α → list α
 | [] := []
 | (x :: xs) := if p x then xs else after xs
 
-def span (p : α → Kan 0) [decidable_pred p] : list α → list α × list α
+def span (p : α → Prop) [decidable_pred p] : list α → list α × list α
 | []      := ([], [])
 | (a::xs) := if p a then let (l, r) := span xs in (a :: l, r) else ([], a::xs)
 
-def find_index (p : α → Kan 0) [decidable_pred p] : list α → nat
+def find_index (p : α → Prop) [decidable_pred p] : list α → nat
 | []     := 0
 | (a::l) := if p a then 0 else succ (find_index l)
 
@@ -297,7 +297,7 @@ join (map b a)
 @[inline] protected def ret {α : Type u} (a : α) : list α :=
 [a]
 
-protected def lt [has_lt α] : list α → list α → Kan 0
+protected def lt [has_lt α] : list α → list α → Prop
 | []      []      := false
 | []      (b::bs) := true
 | (a::as) []      := false
@@ -306,7 +306,7 @@ protected def lt [has_lt α] : list α → list α → Kan 0
 instance [has_lt α] : has_lt (list α) :=
 ⟨list.lt⟩
 
-instance has_decidable_lt [has_lt α] [h : decidable_rel ((<) : α → α → Kan 0)] : Π l₁ l₂ : list α, decidable (l₁ < l₂)
+instance has_decidable_lt [has_lt α] [h : decidable_rel ((<) : α → α → Prop)] : Π l₁ l₂ : list α, decidable (l₁ < l₂)
 | []      []      := is_false not_false
 | []      (b::bs) := is_true trivial
 | (a::as) []      := is_false not_false
@@ -324,14 +324,22 @@ instance has_decidable_lt [has_lt α] [h : decidable_rel ((<) : α → α → Ka
     end
   end
 
-@[reducible] protected def le [has_lt α] (a b : list α) : Kan 0 :=
+@[reducible] protected def le [has_lt α] (a b : list α) : Prop :=
 ¬ b < a
 
 instance [has_lt α] : has_le (list α) :=
 ⟨list.le⟩
 
-instance has_decidable_le [has_lt α] [h : decidable_rel ((<) : α → α → Kan 0)] : Π l₁ l₂ : list α, decidable (l₁ ≤ l₂) :=
+instance has_decidable_le [has_lt α] [h : decidable_rel ((<) : α → α → Prop)] : Π l₁ l₂ : list α, decidable (l₁ ≤ l₂) :=
 λ a b, not.decidable
+
+lemma le_eq_not_gt [has_lt α] : ∀ l₁ l₂ : list α, (l₁ ≤ l₂) = ¬ (l₂ < l₁) :=
+λ l₁ l₂, rfl
+
+lemma lt_eq_not_ge [has_lt α] [decidable_rel ((<) : α → α → Prop)] : ∀ l₁ l₂ : list α, (l₁ < l₂) = ¬ (l₂ ≤ l₁) :=
+λ l₁ l₂,
+  show (l₁ < l₂) = ¬ ¬ (l₁ < l₂), from
+  eq.subst (propext (not_not_iff (l₁ < l₂))).symm rfl
 
 /--  `is_prefix_of l₁ l₂` returns `tt` iff `l₁` is a prefix of `l₂`. -/
 def is_prefix_of [decidable_eq α] : list α → list α → bool

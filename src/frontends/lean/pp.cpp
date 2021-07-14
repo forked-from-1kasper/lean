@@ -687,14 +687,14 @@ auto pretty_fn<T>::pp_var(expr const & e) -> result {
 template<class T>
 auto pretty_fn<T>::pp_sort(expr const & e) -> result {
     level u = sort_level(e);
-    univ v = to_sort(e)->get_univ();
-
-    const auto tok = (v == univ::Kan) ? "Kan" : "Pretype";
-
-    if (u == mk_level_one()) {
-        return result(T(tok));
+    if (u == mk_level_zero()) {
+        return result(T("Prop"));
+    } else if (u == mk_level_one()) {
+        return result(T("Type"));
+    } else if (optional<level> u1 = dec_level(u)) {
+        return result(max_bp()-1, group(T("Type") + space() + nest(5, pp_child(*u1))));
     } else {
-        return result(max_bp()-1, group(T(tok) + space() + nest(5, pp_child(u))));
+        return result(max_bp()-1, group(T("Sort") + space() + nest(5, pp_child(u))));
     }
 }
 template<class T>
@@ -1450,7 +1450,7 @@ bool pretty_fn<T>::match(expr const & p, subexpr const & e, buffer<optional<sube
     } else if (is_sort(p)) {
         if (!is_sort(e.first))
             return false;
-        return match(sort_level(p), sort_level(e.first)) && to_sort(p)->get_univ() == to_sort(e.first)->get_univ();
+        return match(sort_level(p), sort_level(e.first));
     } else if (is_app(e.first)) {
         buffer<expr> p_args, e_args;
         expr p_fn    = get_app_args(p, p_args);

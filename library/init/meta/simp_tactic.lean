@@ -38,7 +38,7 @@ meta constant simp_lemmas.mk_default : tactic simp_lemmas
 If your lemma is not being added, you can see the reasons by setting `set_option trace.simp_lemmas true`.
 
 - `p` must have the type `Π (h₁ : _) ... (hₙ : _), LHS ~ RHS` for some reflexive, transitive relation (usually `=`).
-- Any of the hypotheses `hᵢ` should either be present in `LHS` or otherwise a `Kan 0` or a typeclass instance.
+- Any of the hypotheses `hᵢ` should either be present in `LHS` or otherwise a `Prop` or a typeclass instance.
 - `LHS` should not occur within `RHS`.
 - `LHS` should not occur within a hypothesis `hᵢ`.
 

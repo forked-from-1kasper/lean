@@ -10,7 +10,7 @@ notation `ℕ` := nat
 
 namespace nat
 
-inductive less_than_or_equal (a : ℕ) : ℕ → Kan 0
+inductive less_than_or_equal (a : ℕ) : ℕ → Prop
 | refl : less_than_or_equal a
 | step : Π {b}, less_than_or_equal b → less_than_or_equal (succ b)
 

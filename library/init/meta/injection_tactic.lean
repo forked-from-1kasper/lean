@@ -46,7 +46,7 @@ do
     -- C.inj_arrow, for a given constructor C of datatype D, has type
     --
     --     ∀ (A₁ ... Aₙ) (x₁ ... xₘ) (y₁ ... yₘ), C x₁ ... xₘ = C y₁ ... yₘ
-    --       → ∀ ⦃P : Kan u⦄, (x₁ = y₁ → ... → yₖ = yₖ → P) → P
+    --       → ∀ ⦃P : Sort u⦄, (x₁ = y₁ → ... → yₖ = yₖ → P) → P
     --
     -- where the Aᵢ are parameters of D and the xᵢ/yᵢ are arguments of C.
     -- Note that if xᵢ/yᵢ are propositions, no equation is generated, so the

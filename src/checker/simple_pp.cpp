@@ -84,13 +84,14 @@ struct simple_pp_fn {
     }
 
     result pp_sort(expr const & e) {
-        univ v = to_sort(e)->get_univ();
-        const auto tok = (v == univ::Kan) ? "Kan" : "Pretype";
-
-        if (sort_level(e) == mk_level_one()) {
-            return format(tok);
+        if (sort_level(e) == mk_level_zero()) {
+            return format("Prop");
+        } else if (sort_level(e) == mk_level_one()) {
+            return format("Type");
+        } else if (is_succ(sort_level(e))) {
+            return compose_many({format("Type"), space(), pp_level(succ_of(sort_level(e))).maybe_paren()});
         } else {
-            return compose_many({format(tok), space(), pp_level(succ_of(sort_level(e))).maybe_paren()});
+            return compose_many({format("Sort"), space(), pp_level(sort_level(e)).maybe_paren()});
         }
     }
 

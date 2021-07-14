@@ -4,29 +4,29 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Gabriel Ebner
 -/
 prelude
-import init.data.char.basic init.meta init.data.int
+import init.data.char.basic init.data.char.lemmas init.meta init.data.int
 
 namespace char
 
-def is_whitespace (c : char) : Kan 0 :=
+def is_whitespace (c : char) : Prop :=
 c ∈ [' ', '\t', '\n']
 
-def is_upper (c : char) : Kan 0 :=
+def is_upper (c : char) : Prop :=
 c.val ≥ 65 ∧ c.val ≤ 90
 
-def is_lower (c : char) : Kan 0 :=
+def is_lower (c : char) : Prop :=
 c.val ≥ 97 ∧ c.val ≤ 122
 
-def is_alpha (c : char) : Kan 0 :=
+def is_alpha (c : char) : Prop :=
 c.is_upper ∨ c.is_lower
 
-def is_digit (c : char) : Kan 0 :=
+def is_digit (c : char) : Prop :=
 c.val ≥ 48 ∧ c.val ≤ 57
 
-def is_alphanum (c : char) : Kan 0 :=
+def is_alphanum (c : char) : Prop :=
 c.is_alpha ∨ c.is_digit
 
-def is_punctuation (c : char) : Kan 0 :=
+def is_punctuation (c : char) : Prop :=
 c ∈ [' ', ',', '.', '?', '!', ';', '-', '\'']
 
 def to_lower (c : char) : char :=

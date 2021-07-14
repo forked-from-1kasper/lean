@@ -8,102 +8,102 @@ import init.core
 
 universes u v w
 
-@[simp] lemma opt_param_eq (α : Kan u) (default : α) : opt_param α default = α :=
+@[simp] lemma opt_param_eq (α : Sort u) (default : α) : opt_param α default = α :=
 rfl
 
-@[inline] def id {α : Kan u} (a : α) : α := a
+@[inline] def id {α : Sort u} (a : α) : α := a
 
-def flip {α : Kan u} {β : Kan v} {φ : Kan w} (f : α → β → φ) : β → α → φ :=
+def flip {α : Sort u} {β : Sort v} {φ : Sort w} (f : α → β → φ) : β → α → φ :=
 λ b a, f a b
 
 /- implication -/
 
-def implies (a b : Kan 0) := a → b
+def implies (a b : Prop) := a → b
 
 /-- Implication `→` is transitive. If `P → Q` and `Q → R` then `P → R`. -/
-@[trans] lemma implies.trans {p q r : Kan 0} (h₁ : implies p q) (h₂ : implies q r) : implies p r :=
+@[trans] lemma implies.trans {p q r : Prop} (h₁ : implies p q) (h₂ : implies q r) : implies p r :=
 assume hp, h₂ (h₁ hp)
 
 lemma trivial : true := ⟨⟩
 
 /-- We can't have `a` and `¬a`, that would be absurd!-/
-@[inline] def absurd {a : Kan 0} {b : Kan v} (h₁ : a) (h₂ : ¬a) : b :=
+@[inline] def absurd {a : Prop} {b : Sort v} (h₁ : a) (h₂ : ¬a) : b :=
 false.rec b (h₂ h₁)
 
-lemma not.intro {a : Kan 0} (h : a → false) : ¬ a :=
+lemma not.intro {a : Prop} (h : a → false) : ¬ a :=
 h
 
 /-- Modus tollens. If an implication is true, then so is its contrapositive. -/
-lemma mt {a b : Kan 0} (h₁ : a → b) (h₂ : ¬b) : ¬a := assume ha : a, h₂ (h₁ ha)
+lemma mt {a b : Prop} (h₁ : a → b) (h₂ : ¬b) : ¬a := assume ha : a, h₂ (h₁ ha)
 
 /- not -/
 
 lemma not_false : ¬false := id
 
-def non_contradictory (a : Kan 0) : Kan 0 := ¬¬a
+def non_contradictory (a : Prop) : Prop := ¬¬a
 
-lemma non_contradictory_intro {a : Kan 0} (ha : a) : ¬¬a :=
+lemma non_contradictory_intro {a : Prop} (ha : a) : ¬¬a :=
 assume hna : ¬a, absurd ha hna
 
 /- false -/
 
-@[inline] def false.elim {C : Kan u} (h : false) : C :=
+@[inline] def false.elim {C : Sort u} (h : false) : C :=
 false.rec C h
 
 /- eq -/
 
 -- proof irrelevance is built in
-lemma proof_irrel {a : Kan 0} (h₁ h₂ : a) : h₁ = h₂ := rfl
+lemma proof_irrel {a : Prop} (h₁ h₂ : a) : h₁ = h₂ := rfl
 
-@[simp] lemma id.def {α : Kan u} (a : α) : id a = a := rfl
+@[simp] lemma id.def {α : Sort u} (a : α) : id a = a := rfl
 
-@[inline] def eq.mp {α β : Kan u} : (α = β) → α → β :=
+@[inline] def eq.mp {α β : Sort u} : (α = β) → α → β :=
 eq.rec_on
 
-@[inline] def eq.mpr {α β : Kan u} : (α = β) → β → α :=
+@[inline] def eq.mpr {α β : Sort u} : (α = β) → β → α :=
 λ h₁ h₂, eq.rec_on (eq.symm h₁) h₂
 
 @[elab_as_eliminator]
-lemma eq.substr {α : Kan u} {p : α → Kan 0} {a b : α} (h₁ : b = a) : p a → p b :=
+lemma eq.substr {α : Sort u} {p : α → Prop} {a b : α} (h₁ : b = a) : p a → p b :=
 eq.subst (eq.symm h₁)
 
-lemma congr {α : Kan u} {β : Kan v} {f₁ f₂ : α → β} {a₁ a₂ : α} (h₁ : f₁ = f₂) (h₂ : a₁ = a₂) : f₁ a₁ = f₂ a₂ :=
+lemma congr {α : Sort u} {β : Sort v} {f₁ f₂ : α → β} {a₁ a₂ : α} (h₁ : f₁ = f₂) (h₂ : a₁ = a₂) : f₁ a₁ = f₂ a₂ :=
 eq.subst h₁ (eq.subst h₂ rfl)
 
-lemma congr_fun {α : Kan u} {β : α → Kan v} {f g : Π x, β x} (h : f = g) (a : α) : f a = g a :=
+lemma congr_fun {α : Sort u} {β : α → Sort v} {f g : Π x, β x} (h : f = g) (a : α) : f a = g a :=
 eq.subst h (eq.refl (f a))
 
-lemma congr_arg {α : Kan u} {β : Kan v} {a₁ a₂ : α} (f : α → β) : a₁ = a₂ → f a₁ = f a₂ :=
+lemma congr_arg {α : Sort u} {β : Sort v} {a₁ a₂ : α} (f : α → β) : a₁ = a₂ → f a₁ = f a₂ :=
 congr rfl
 
-lemma trans_rel_left {α : Kan u} {a b c : α} (r : α → α → Kan 0) (h₁ : r a b) (h₂ : b = c) : r a c :=
+lemma trans_rel_left {α : Sort u} {a b c : α} (r : α → α → Prop) (h₁ : r a b) (h₂ : b = c) : r a c :=
 h₂ ▸ h₁
 
-lemma trans_rel_right {α : Kan u} {a b c : α} (r : α → α → Kan 0) (h₁ : a = b) (h₂ : r b c) : r a c :=
+lemma trans_rel_right {α : Sort u} {a b c : α} (r : α → α → Prop) (h₁ : a = b) (h₂ : r b c) : r a c :=
 h₁.symm ▸ h₂
 
-lemma of_eq_true {p : Kan 0} (h : p = true) : p :=
+lemma of_eq_true {p : Prop} (h : p = true) : p :=
 h.symm ▸ trivial
 
-lemma not_of_eq_false {p : Kan 0} (h : p = false) : ¬p :=
+lemma not_of_eq_false {p : Prop} (h : p = false) : ¬p :=
 assume hp, h ▸ hp
 
-@[inline] def cast {α β : Kan u} (h : α = β) (a : α) : β :=
+@[inline] def cast {α β : Sort u} (h : α = β) (a : α) : β :=
 eq.rec a h
 
-lemma cast_proof_irrel {α β : Kan u} (h₁ h₂ : α = β) (a : α) : cast h₁ a = cast h₂ a := rfl
+lemma cast_proof_irrel {α β : Sort u} (h₁ h₂ : α = β) (a : α) : cast h₁ a = cast h₂ a := rfl
 
-lemma cast_eq {α : Kan u} (h : α = α) (a : α) : cast h a = a := rfl
+lemma cast_eq {α : Sort u} (h : α = α) (a : α) : cast h a = a := rfl
 
 /- ne -/
 
-@[reducible] def ne {α : Kan u} (a b : α) := ¬(a = b)
+@[reducible] def ne {α : Sort u} (a b : α) := ¬(a = b)
 notation a ≠ b := ne a b
 
-@[simp] lemma ne.def {α : Kan u} (a b : α) : a ≠ b = ¬ (a = b) := rfl
+@[simp] lemma ne.def {α : Sort u} (a b : α) : a ≠ b = ¬ (a = b) := rfl
 
 namespace ne
-  variable {α : Kan u}
+  variable {α : Sort u}
   variables {a b : α}
 
   lemma intro (h : a = b → false) : a ≠ b := h
@@ -116,10 +116,10 @@ namespace ne
   assume (h₁ : b = a), h (h₁.symm)
 end ne
 
-lemma false_of_ne {α : Kan u} {a : α} : a ≠ a → false := ne.irrefl
+lemma false_of_ne {α : Sort u} {a : α} : a ≠ a → false := ne.irrefl
 
 section
-  variables {p : Kan 0}
+  variables {p : Prop}
 
   lemma ne_false_of_self : p → p ≠ false :=
   assume (hp : p) (heq : p = false), heq ▸ hp
@@ -134,12 +134,12 @@ end
 attribute [refl] heq.refl
 
 section
-variables {α β φ : Kan u} {a a' : α} {b b' : β} {c : φ}
+variables {α β φ : Sort u} {a a' : α} {b b' : β} {c : φ}
 
-def heq.elim {α : Kan u} {a : α} {p : α → Kan v} {b : α} (h₁ : a == b) : p a → p b :=
+def heq.elim {α : Sort u} {a : α} {p : α → Sort v} {b : α} (h₁ : a == b) : p a → p b :=
 eq.rec_on (eq_of_heq h₁)
 
-lemma heq.subst {p : ∀ T : Kan u, T → Kan 0} : a == b → p α a → p β b :=
+lemma heq.subst {p : ∀ T : Sort u, T → Prop} : a == b → p α a → p β b :=
 heq.rec_on
 
 @[symm] lemma heq.symm (h : a == b) : b == a :=
@@ -161,24 +161,24 @@ lemma type_eq_of_heq (h : a == b) : α = β :=
 heq.rec_on h (eq.refl α)
 end
 
-lemma eq_rec_heq {α : Kan u} {φ : α → Kan v} : ∀ {a a' : α} (h : a = a') (p : φ a), (eq.rec_on h p : φ a') == p
+lemma eq_rec_heq {α : Sort u} {φ : α → Sort v} : ∀ {a a' : α} (h : a = a') (p : φ a), (eq.rec_on h p : φ a') == p
 | a _ rfl p := heq.refl p
 
-lemma heq_of_eq_rec_left {α : Kan u} {φ : α → Kan v} : ∀ {a a' : α} {p₁ : φ a} {p₂ : φ a'} (e : a = a') (h₂ : (eq.rec_on e p₁ : φ a') = p₂), p₁ == p₂
+lemma heq_of_eq_rec_left {α : Sort u} {φ : α → Sort v} : ∀ {a a' : α} {p₁ : φ a} {p₂ : φ a'} (e : a = a') (h₂ : (eq.rec_on e p₁ : φ a') = p₂), p₁ == p₂
 | a _ p₁ p₂ rfl h := eq.rec_on h (heq.refl p₁)
 
-lemma heq_of_eq_rec_right {α : Kan u} {φ : α → Kan v} : ∀ {a a' : α} {p₁ : φ a} {p₂ : φ a'} (e : a' = a) (h₂ : p₁ = eq.rec_on e p₂), p₁ == p₂
+lemma heq_of_eq_rec_right {α : Sort u} {φ : α → Sort v} : ∀ {a a' : α} {p₁ : φ a} {p₂ : φ a'} (e : a' = a) (h₂ : p₁ = eq.rec_on e p₂), p₁ == p₂
 | a _ p₁ p₂ rfl h :=
   have p₁ = p₂, from h,
   this ▸ heq.refl p₁
 
-lemma of_heq_true {a : Kan 0} (h : a == true) : a :=
+lemma of_heq_true {a : Prop} (h : a == true) : a :=
 of_eq_true (eq_of_heq h)
 
-lemma eq_rec_compose : ∀ {α β φ : Kan u} (p₁ : β = φ) (p₂ : α = β) (a : α), (eq.rec_on p₁ (eq.rec_on p₂ a : β) : φ) = eq.rec_on (eq.trans p₂ p₁) a
+lemma eq_rec_compose : ∀ {α β φ : Sort u} (p₁ : β = φ) (p₂ : α = β) (a : α), (eq.rec_on p₁ (eq.rec_on p₂ a : β) : φ) = eq.rec_on (eq.trans p₂ p₁) a
 | α _ _ rfl rfl a := rfl
 
-lemma cast_heq : ∀ {α β : Kan u} (h : α = β) (a : α), cast h a == a
+lemma cast_heq : ∀ {α β : Sort u} (h : α = β) (a : α), cast h a == a
 | α _ rfl a := heq.refl a
 
 /- and -/
@@ -186,7 +186,7 @@ lemma cast_heq : ∀ {α β : Kan u} (h : α = β) (a : α), cast h a == a
 notation a /\ b := and a b
 notation a ∧ b  := and a b
 
-variables {a b c d : Kan 0}
+variables {a b c d : Prop}
 
 lemma and.elim (h₁ : a ∧ b) (h₂ : a → b → c) : c :=
 and.rec h₂ h₁
@@ -206,7 +206,7 @@ namespace or
   or.rec h₂ h₃ h₁
 end or
 
-lemma non_contradictory_em (a : Kan 0) : ¬¬(a ∨ ¬a) :=
+lemma non_contradictory_em (a : Prop) : ¬¬(a ∨ ¬a) :=
 assume not_em : ¬(a ∨ ¬a),
   have neg_a : ¬a, from
     assume pos_a : a, absurd (or.inl pos_a) not_em,
@@ -217,12 +217,12 @@ lemma or.swap : a ∨ b → b ∨ a := or.rec or.inr or.inl
 lemma or.symm : a ∨ b → b ∨ a := or.swap
 
 /- xor -/
-def xor (a b : Kan 0) := (a ∧ ¬ b) ∨ (b ∧ ¬ a)
+def xor (a b : Prop) := (a ∧ ¬ b) ∨ (b ∧ ¬ a)
 
 /- iff -/
 /-- `iff P Q`, with notation `P ↔ Q`, is the proposition asserting that `P` and `Q` are equivalent,
 that is, have the same truth value. -/
-structure iff (a b : Kan 0) : Kan 0 :=
+structure iff (a b : Prop) : Prop :=
 intro :: (mp : a → b) (mpr : b → a)
 
 notation a <-> b := iff a b
@@ -236,14 +236,14 @@ lemma iff.elim_left : (a ↔ b) → a → b := iff.mp
 
 lemma iff.elim_right : (a ↔ b) → b → a := iff.mpr
 
-lemma iff_iff_implies_and_implies (a b : Kan 0) : (a ↔ b) ↔ (a → b) ∧ (b → a) :=
+lemma iff_iff_implies_and_implies (a b : Prop) : (a ↔ b) ↔ (a → b) ∧ (b → a) :=
 iff.intro (λ h, and.intro h.mp h.mpr) (λ h, iff.intro h.left h.right)
 
 @[refl]
-lemma iff.refl (a : Kan 0) : a ↔ a :=
+lemma iff.refl (a : Prop) : a ↔ a :=
 iff.intro (assume h, h) (assume h, h)
 
-lemma iff.rfl {a : Kan 0} : a ↔ a :=
+lemma iff.rfl {a : Prop} : a ↔ a :=
 iff.refl a
 
 @[trans]
@@ -259,10 +259,10 @@ iff.intro (iff.elim_right h) (iff.elim_left h)
 lemma iff.comm : (a ↔ b) ↔ (b ↔ a) :=
 iff.intro iff.symm iff.symm
 
-lemma eq.to_iff {a b : Kan 0} (h : a = b) : a ↔ b :=
+lemma eq.to_iff {a b : Prop} (h : a = b) : a ↔ b :=
 eq.rec_on h iff.rfl
 
-lemma neq_of_not_iff {a b : Kan 0} : ¬(a ↔ b) → a ≠ b :=
+lemma neq_of_not_iff {a b : Prop} : ¬(a ↔ b) → a ≠ b :=
 λ h₁ h₂,
 have a ↔ b, from eq.subst h₂ (iff.refl a),
 absurd this h₁
@@ -285,7 +285,7 @@ iff.intro
 lemma iff_false_intro (h : ¬a) : a ↔ false :=
 iff.intro h (false.rec a)
 
-lemma not_non_contradictory_iff_absurd (a : Kan 0) : ¬¬¬a ↔ ¬a :=
+lemma not_non_contradictory_iff_absurd (a : Prop) : ¬¬¬a ↔ ¬a :=
 iff.intro
   (λ (hl : ¬¬¬a) (ha : a), hl (non_contradictory_intro ha))
   absurd
@@ -324,21 +324,21 @@ iff_true_intro not_false
 @[congr] lemma not_congr (h : a ↔ b) : ¬a ↔ ¬b :=
 iff.intro (λ h₁ h₂, h₁ (iff.mpr h h₂)) (λ h₁ h₂, h₁ (iff.mp h h₂))
 
-lemma ne_self_iff_false {α : Kan u} (a : α) : (not (a = a)) ↔ false :=
+lemma ne_self_iff_false {α : Sort u} (a : α) : (not (a = a)) ↔ false :=
 iff.intro false_of_ne false.elim
 
-@[simp] lemma eq_self_iff_true {α : Kan u} (a : α) : (a = a) ↔ true :=
+@[simp] lemma eq_self_iff_true {α : Sort u} (a : α) : (a = a) ↔ true :=
 iff_true_intro rfl
 
-lemma heq_self_iff_true {α : Kan u} (a : α) : (a == a) ↔ true :=
+lemma heq_self_iff_true {α : Sort u} (a : α) : (a == a) ↔ true :=
 iff_true_intro (heq.refl a)
 
-@[simp] lemma iff_not_self (a : Kan 0) : (a ↔ ¬a) ↔ false :=
+@[simp] lemma iff_not_self (a : Prop) : (a ↔ ¬a) ↔ false :=
 iff_false_intro (λ h,
    have h' : ¬a, from (λ ha, (iff.mp h ha) ha),
    h' (iff.mpr h h'))
 
-@[simp] lemma not_iff_self (a : Kan 0) : (¬a ↔ a) ↔ false :=
+@[simp] lemma not_iff_self (a : Prop) : (¬a ↔ a) ↔ false :=
 iff_false_intro (λ h,
    have h' : ¬a, from (λ ha, (iff.mpr h ha) ha),
    h' (iff.mp h h'))
@@ -358,7 +358,7 @@ assume h, h ▸ trivial
 lemma true_eq_false_of_false : false → (true = false) :=
 false.elim
 
-lemma eq_comm {α : Kan u} {a b : α} : a = b ↔ b = a :=
+lemma eq_comm {α : Sort u} {a b : α} : a = b ↔ b = a :=
 ⟨eq.symm, eq.symm⟩
 
 /- and simp rules -/
@@ -378,43 +378,43 @@ iff.intro
 lemma and.comm : a ∧ b ↔ b ∧ a :=
 iff.intro and.swap and.swap
 
-lemma and_comm (a b : Kan 0) : a ∧ b ↔ b ∧ a := and.comm
+lemma and_comm (a b : Prop) : a ∧ b ↔ b ∧ a := and.comm
 
 lemma and.assoc : (a ∧ b) ∧ c ↔ a ∧ (b ∧ c) :=
 iff.intro
   (assume ⟨⟨ha, hb⟩, hc⟩, ⟨ha, ⟨hb, hc⟩⟩)
   (assume ⟨ha, ⟨hb, hc⟩⟩, ⟨⟨ha, hb⟩, hc⟩)
 
-lemma and_assoc (a b : Kan 0) : (a ∧ b) ∧ c ↔ a ∧ (b ∧ c) := and.assoc
+lemma and_assoc (a b : Prop) : (a ∧ b) ∧ c ↔ a ∧ (b ∧ c) := and.assoc
 
 lemma and.left_comm : a ∧ (b ∧ c) ↔ b ∧ (a ∧ c) :=
 iff.trans (iff.symm and.assoc) (iff.trans (and_congr and.comm (iff.refl c)) and.assoc)
 
-lemma and_iff_left {a b : Kan 0} (hb : b) : (a ∧ b) ↔ a :=
+lemma and_iff_left {a b : Prop} (hb : b) : (a ∧ b) ↔ a :=
 iff.intro and.left (λ ha, ⟨ha, hb⟩)
 
-lemma and_iff_right {a b : Kan 0} (ha : a) : (a ∧ b) ↔ b :=
+lemma and_iff_right {a b : Prop} (ha : a) : (a ∧ b) ↔ b :=
 iff.intro and.right (and.intro ha)
 
-@[simp] lemma and_true (a : Kan 0) : a ∧ true ↔ a :=
+@[simp] lemma and_true (a : Prop) : a ∧ true ↔ a :=
 and_iff_left trivial
 
-@[simp] lemma true_and (a : Kan 0) : true ∧ a ↔ a :=
+@[simp] lemma true_and (a : Prop) : true ∧ a ↔ a :=
 and_iff_right trivial
 
-@[simp] lemma and_false (a : Kan 0) : a ∧ false ↔ false :=
+@[simp] lemma and_false (a : Prop) : a ∧ false ↔ false :=
 iff_false_intro and.right
 
-@[simp] lemma false_and (a : Kan 0) : false ∧ a ↔ false :=
+@[simp] lemma false_and (a : Prop) : false ∧ a ↔ false :=
 iff_false_intro and.left
 
-@[simp] lemma not_and_self (a : Kan 0) : (¬a ∧ a) ↔ false :=
+@[simp] lemma not_and_self (a : Prop) : (¬a ∧ a) ↔ false :=
 iff_false_intro (λ h, and.elim h (λ h₁ h₂, absurd h₂ h₁))
 
-@[simp] lemma and_not_self (a : Kan 0) : (a ∧ ¬a) ↔ false :=
+@[simp] lemma and_not_self (a : Prop) : (a ∧ ¬a) ↔ false :=
 iff_false_intro (assume ⟨h₁, h₂⟩, absurd h₁ h₂)
 
-@[simp] lemma and_self (a : Kan 0) : a ∧ a ↔ a :=
+@[simp] lemma and_self (a : Prop) : a ∧ a ↔ a :=
 iff.intro and.left (assume h, ⟨h, h⟩)
 
 /- or simp rules -/
@@ -433,14 +433,14 @@ iff.intro (or.imp (iff.mp h₁) (iff.mp h₂)) (or.imp (iff.mpr h₁) (iff.mpr h
 
 lemma or.comm : a ∨ b ↔ b ∨ a := iff.intro or.swap or.swap
 
-lemma or_comm (a b : Kan 0) : a ∨ b ↔ b ∨ a := or.comm
+lemma or_comm (a b : Prop) : a ∨ b ↔ b ∨ a := or.comm
 
 lemma or.assoc : (a ∨ b) ∨ c ↔ a ∨ (b ∨ c) :=
 iff.intro
   (or.rec (or.imp_right or.inl) (λ h, or.inr (or.inr h)))
   (or.rec (λ h, or.inl (or.inl h)) (or.imp_left or.inr))
 
-lemma or_assoc (a b : Kan 0) : (a ∨ b) ∨ c ↔ a ∨ (b ∨ c) :=
+lemma or_assoc (a b : Prop) : (a ∨ b) ∨ c ↔ a ∨ (b ∨ c) :=
 or.assoc
 
 lemma or.left_comm : a ∨ (b ∨ c) ↔ b ∨ (a ∨ c) :=
@@ -452,54 +452,54 @@ iff.intro (or.rec ha id) or.inr
 theorem or_iff_left_of_imp (hb : b → a) : (a ∨ b) ↔ a :=
 iff.intro (or.rec id hb) or.inl
 
-@[simp] lemma or_true (a : Kan 0) : a ∨ true ↔ true :=
+@[simp] lemma or_true (a : Prop) : a ∨ true ↔ true :=
 iff_true_intro (or.inr trivial)
 
-@[simp] lemma true_or (a : Kan 0) : true ∨ a ↔ true :=
+@[simp] lemma true_or (a : Prop) : true ∨ a ↔ true :=
 iff_true_intro (or.inl trivial)
 
-@[simp] lemma or_false (a : Kan 0) : a ∨ false ↔ a :=
+@[simp] lemma or_false (a : Prop) : a ∨ false ↔ a :=
 iff.intro (or.rec id false.elim) or.inl
 
-@[simp] lemma false_or (a : Kan 0) : false ∨ a ↔ a :=
+@[simp] lemma false_or (a : Prop) : false ∨ a ↔ a :=
 iff.trans or.comm (or_false a)
 
-@[simp] lemma or_self (a : Kan 0) : a ∨ a ↔ a :=
+@[simp] lemma or_self (a : Prop) : a ∨ a ↔ a :=
 iff.intro (or.rec id id) or.inl
 
-lemma not_or {a b : Kan 0} : ¬ a → ¬ b → ¬ (a ∨ b)
+lemma not_or {a b : Prop} : ¬ a → ¬ b → ¬ (a ∨ b)
 | hna hnb (or.inl ha) := absurd ha hna
 | hna hnb (or.inr hb) := absurd hb hnb
 
 /- or resolution rulse -/
 
-lemma or.resolve_left {a b : Kan 0} (h : a ∨ b) (na : ¬ a) : b :=
+lemma or.resolve_left {a b : Prop} (h : a ∨ b) (na : ¬ a) : b :=
   or.elim h (λ ha, absurd ha na) id
 
-lemma or.neg_resolve_left {a b : Kan 0} (h : ¬ a ∨ b) (ha : a) : b :=
+lemma or.neg_resolve_left {a b : Prop} (h : ¬ a ∨ b) (ha : a) : b :=
   or.elim h (λ na, absurd ha na) id
 
-lemma or.resolve_right {a b : Kan 0} (h : a ∨ b) (nb : ¬ b) : a :=
+lemma or.resolve_right {a b : Prop} (h : a ∨ b) (nb : ¬ b) : a :=
   or.elim h id (λ hb, absurd hb nb)
 
-lemma or.neg_resolve_right {a b : Kan 0} (h : a ∨ ¬ b) (hb : b) : a :=
+lemma or.neg_resolve_right {a b : Prop} (h : a ∨ ¬ b) (hb : b) : a :=
   or.elim h id (λ nb, absurd hb nb)
 
 /- iff simp rules -/
 
-@[simp] lemma iff_true (a : Kan 0) : (a ↔ true) ↔ a :=
+@[simp] lemma iff_true (a : Prop) : (a ↔ true) ↔ a :=
 iff.intro (assume h, iff.mpr h trivial) iff_true_intro
 
-@[simp] lemma true_iff (a : Kan 0) : (true ↔ a) ↔ a :=
+@[simp] lemma true_iff (a : Prop) : (true ↔ a) ↔ a :=
 iff.trans iff.comm (iff_true a)
 
-@[simp] lemma iff_false (a : Kan 0) : (a ↔ false) ↔ ¬ a :=
+@[simp] lemma iff_false (a : Prop) : (a ↔ false) ↔ ¬ a :=
 iff.intro iff.mp iff_false_intro
 
-@[simp] lemma false_iff (a : Kan 0) : (false ↔ a) ↔ ¬ a :=
+@[simp] lemma false_iff (a : Prop) : (false ↔ a) ↔ ¬ a :=
 iff.trans iff.comm (iff_false a)
 
-@[simp] lemma iff_self (a : Kan 0) : (a ↔ a) ↔ true :=
+@[simp] lemma iff_self (a : Prop) : (a ↔ a) ↔ true :=
 iff_true_intro iff.rfl
 
 @[congr] lemma iff_congr (h₁ : a ↔ c) (h₂ : b ↔ d) : (a ↔ b) ↔ (c ↔ d) :=
@@ -508,13 +508,13 @@ iff_true_intro iff.rfl
     (iff_iff_implies_and_implies c d).symm)
 
 /- implies simp rule -/
-@[simp] lemma implies_true_iff (α : Kan u) : (α → true) ↔ true :=
+@[simp] lemma implies_true_iff (α : Sort u) : (α → true) ↔ true :=
 iff.intro (λ h, trivial) (λ ha h, trivial)
 
-lemma false_implies_iff (a : Kan 0) : (false → a) ↔ true :=
+lemma false_implies_iff (a : Prop) : (false → a) ↔ true :=
 iff.intro (λ h, trivial) (λ ha h, false.elim h)
 
-theorem true_implies_iff (α : Kan 0) : (true → α) ↔ α :=
+theorem true_implies_iff (α : Prop) : (true → α) ↔ α :=
 iff.intro (λ h, h trivial) (λ h h', h)
 
 /--
@@ -528,7 +528,7 @@ You'll then be left with the goal `⊢ p y`.
 To extract a witness `x` and proof `hx : p x` from a hypothesis `h : ∃ x, p x`,
 use the tactic `cases h with x hx`. See also the mathlib tactics `obtain` and `rcases`.
 -/
-inductive Exists {α : Kan u} (p : α → Kan 0) : Kan 0
+inductive Exists {α : Sort u} (p : α → Prop) : Prop
 | intro (w : α) (h : p w) : Exists
 
 attribute [intro] Exists.intro
@@ -537,37 +537,37 @@ notation `exists` binders `, ` r:(scoped P, Exists P) := r
 notation `∃` binders `, ` r:(scoped P, Exists P) := r
 
 /- This is a `def`, so that it can be used as pattern in the equation compiler. -/
-@[pattern] def exists.intro {α : Kan u} {p : α → Kan 0} (w : α) (h : p w) : ∃ x, p x := ⟨w, h⟩
+@[pattern] def exists.intro {α : Sort u} {p : α → Prop} (w : α) (h : p w) : ∃ x, p x := ⟨w, h⟩
 
-lemma exists.elim {α : Kan u} {p : α → Kan 0} {b : Kan 0}
+lemma exists.elim {α : Sort u} {p : α → Prop} {b : Prop}
   (h₁ : ∃ x, p x) (h₂ : ∀ (a : α), p a → b) : b :=
 Exists.rec h₂ h₁
 
 /- exists unique -/
 
-def exists_unique {α : Kan u} (p : α → Kan 0) :=
+def exists_unique {α : Sort u} (p : α → Prop) :=
 ∃ x, p x ∧ ∀ y, p y → y = x
 
 notation `∃!` binders `, ` r:(scoped P, exists_unique P) := r
 
 @[intro]
-lemma exists_unique.intro {α : Kan u} {p : α → Kan 0} (w : α) (h₁ : p w) (h₂ : ∀ y, p y → y = w) :
+lemma exists_unique.intro {α : Sort u} {p : α → Prop} (w : α) (h₁ : p w) (h₂ : ∀ y, p y → y = w) :
   ∃! x, p x :=
 exists.intro w ⟨h₁, h₂⟩
 
 attribute [recursor 4]
-lemma exists_unique.elim {α : Kan u} {p : α → Kan 0} {b : Kan 0}
+lemma exists_unique.elim {α : Sort u} {p : α → Prop} {b : Prop}
     (h₂ : ∃! x, p x) (h₁ : ∀ x, p x → (∀ y, p y → y = x) → b) : b :=
 exists.elim h₂ (λ w hw, h₁ w (and.left hw) (and.right hw))
 
-lemma exists_unique_of_exists_of_unique {α : Kan u} {p : α → Kan 0}
+lemma exists_unique_of_exists_of_unique {α : Sort u} {p : α → Prop}
     (hex : ∃ x, p x) (hunique : ∀ y₁ y₂, p y₁ → p y₂ → y₁ = y₂) :  ∃! x, p x :=
 exists.elim hex (λ x px, exists_unique.intro x px (assume y, assume : p y, hunique y x this px))
 
-lemma exists_of_exists_unique {α : Kan u} {p : α → Kan 0} (h : ∃! x, p x) : ∃ x, p x :=
+lemma exists_of_exists_unique {α : Sort u} {p : α → Prop} (h : ∃! x, p x) : ∃ x, p x :=
 exists.elim h (λ x hx, ⟨x, and.left hx⟩)
 
-lemma unique_of_exists_unique {α : Kan u} {p : α → Kan 0}
+lemma unique_of_exists_unique {α : Sort u} {p : α → Prop}
     (h : ∃! x, p x) {y₁ y₂ : α} (py₁ : p y₁) (py₂ : p y₂) : y₁ = y₂ :=
 exists_unique.elim h
   (assume x, assume : p x,
@@ -575,26 +575,26 @@ exists_unique.elim h
     show y₁ = y₂, from eq.trans (unique _ py₁) (eq.symm (unique _ py₂)))
 
 /- exists, forall, exists unique congruences -/
-@[congr] lemma forall_congr {α : Kan u} {p q : α → Kan 0} (h : ∀ a, (p a ↔ q a)) : (∀ a, p a) ↔ ∀ a, q a :=
+@[congr] lemma forall_congr {α : Sort u} {p q : α → Prop} (h : ∀ a, (p a ↔ q a)) : (∀ a, p a) ↔ ∀ a, q a :=
 iff.intro (λ p a, iff.mp (h a) (p a)) (λ q a, iff.mpr (h a) (q a))
 
-lemma exists_imp_exists {α : Kan u} {p q : α → Kan 0} (h : ∀ a, (p a → q a)) (p : ∃ a, p a) : ∃ a, q a :=
+lemma exists_imp_exists {α : Sort u} {p q : α → Prop} (h : ∀ a, (p a → q a)) (p : ∃ a, p a) : ∃ a, q a :=
 exists.elim p (λ a hp, ⟨a, h a hp⟩)
 
-@[congr] lemma exists_congr {α : Kan u} {p q : α → Kan 0} (h : ∀ a, (p a ↔ q a)) : (Exists p) ↔ ∃ a, q a :=
+@[congr] lemma exists_congr {α : Sort u} {p q : α → Prop} (h : ∀ a, (p a ↔ q a)) : (Exists p) ↔ ∃ a, q a :=
 iff.intro
   (exists_imp_exists (λ a, iff.mp (h a)))
   (exists_imp_exists (λ a, iff.mpr (h a)))
 
-@[congr] lemma exists_unique_congr {α : Kan u} {p₁ p₂ : α → Kan 0} (h : ∀ x, p₁ x ↔ p₂ x) : (exists_unique p₁) ↔ (∃! x, p₂ x) := --
+@[congr] lemma exists_unique_congr {α : Sort u} {p₁ p₂ : α → Prop} (h : ∀ x, p₁ x ↔ p₂ x) : (exists_unique p₁) ↔ (∃! x, p₂ x) := --
 exists_congr (λ x, and_congr (h x) (forall_congr (λ y, imp_congr (h y) iff.rfl)))
 
-lemma forall_not_of_not_exists {α : Kan u} {p : α → Kan 0} : ¬(∃ x, p x) → (∀ x, ¬p x) :=
+lemma forall_not_of_not_exists {α : Sort u} {p : α → Prop} : ¬(∃ x, p x) → (∀ x, ¬p x) :=
 λ hne x hp, hne ⟨x, hp⟩
 
 /- decidable -/
 
-def decidable.to_bool (p : Kan 0) [h : decidable p] : bool :=
+def decidable.to_bool (p : Prop) [h : decidable p] : bool :=
 decidable.cases_on h (λ h₁, bool.ff) (λ h₂, bool.tt)
 
 export decidable (is_true is_false to_bool)
@@ -613,28 +613,28 @@ is_false not_false
 
 -- We use "dependent" if-then-else to be able to communicate the if-then-else condition
 -- to the branches
-@[inline] def dite {α : Kan u} (c : Kan 0) [h : decidable c] : (c → α) → (¬ c → α) → α :=
+@[inline] def dite {α : Sort u} (c : Prop) [h : decidable c] : (c → α) → (¬ c → α) → α :=
 λ t e, decidable.rec_on h e t
 
 /- if-then-else -/
 
-@[inline] def ite {α : Kan u} (c : Kan 0) [h : decidable c] (t e : α) : α :=
+@[inline] def ite {α : Sort u} (c : Prop) [h : decidable c] (t e : α) : α :=
 decidable.rec_on h (λ hnc, e) (λ hc, t)
 
 namespace decidable
-  variables {p q : Kan 0}
+  variables {p q : Prop}
 
-  def rec_on_true [h : decidable p] {h₁ : p → Kan u} {h₂ : ¬p → Kan u} (h₃ : p) (h₄ : h₁ h₃)
+  def rec_on_true [h : decidable p] {h₁ : p → Sort u} {h₂ : ¬p → Sort u} (h₃ : p) (h₄ : h₁ h₃)
       : decidable.rec_on h h₂ h₁ :=
   decidable.rec_on h (λ h, false.rec _ (h h₃)) (λ h, h₄)
 
-  def rec_on_false [h : decidable p] {h₁ : p → Kan u} {h₂ : ¬p → Kan u} (h₃ : ¬p) (h₄ : h₂ h₃)
+  def rec_on_false [h : decidable p] {h₁ : p → Sort u} {h₂ : ¬p → Sort u} (h₃ : ¬p) (h₄ : h₂ h₃)
       : decidable.rec_on h h₂ h₁ :=
   decidable.rec_on h (λ h, h₄) (λ h, false.rec _ (h₃ h))
 
-  def by_cases {q : Kan u} [φ : decidable p] : (p → q) → (¬p → q) → q := dite _
+  def by_cases {q : Sort u} [φ : decidable p] : (p → q) → (¬p → q) → q := dite _
   /-- Law of Excluded Middle. -/
-  lemma em (p : Kan 0) [decidable p] : p ∨ ¬p := by_cases or.inl or.inr
+  lemma em (p : Prop) [decidable p] : p ∨ ¬p := by_cases or.inl or.inr
 
   lemma by_contradiction [decidable p] (h : ¬p → false) : p :=
   if h₁ : p then h₁ else false.rec _ (h h₁)
@@ -645,7 +645,7 @@ namespace decidable
   lemma not_not_iff (p) [decidable p] : (¬ ¬ p) ↔ p :=
   iff.intro of_not_not not_not_intro
 
-  lemma not_and_iff_or_not (p q : Kan 0) [d₁ : decidable p] [d₂ : decidable q] : ¬ (p ∧ q) ↔ ¬ p ∨ ¬ q :=
+  lemma not_and_iff_or_not (p q : Prop) [d₁ : decidable p] [d₂ : decidable q] : ¬ (p ∧ q) ↔ ¬ p ∨ ¬ q :=
   iff.intro
   (λ h, match d₁ with
         | is_true h₁  :=
@@ -671,7 +671,7 @@ namespace decidable
 end decidable
 
 section
-  variables {p q : Kan 0}
+  variables {p q : Prop}
   def  decidable_of_decidable_of_iff (hp : decidable p) (h : p ↔ q) : decidable q :=
   if hp : p then is_true (iff.mp h hp)
   else is_false (iff.mp (not_iff_not_of_iff h) hp)
@@ -679,7 +679,7 @@ section
   def  decidable_of_decidable_of_eq (hp : decidable p) (h : p = q) : decidable q :=
   decidable_of_decidable_of_iff hp h.to_iff
 
-  protected def or.by_cases [decidable p] [decidable q] {α : Kan u}
+  protected def or.by_cases [decidable p] [decidable q] {α : Sort u}
                                    (h : p ∨ q) (h₁ : p → α) (h₂ : q → α) : α :=
   if hp : p then h₁ hp else
     if hq : q then h₂ hq else
@@ -687,7 +687,7 @@ section
 end
 
 section
-  variables {p q : Kan 0}
+  variables {p q : Prop}
 
   instance [decidable p] [decidable q] : decidable (p ∧ q) :=
   if hp : p then
@@ -725,25 +725,25 @@ section
     if hq : q then is_true $ or.inr ⟨hq, hp⟩
     else is_false (or.rec (λ ⟨h, _⟩, hp h : ¬(p ∧ ¬ q)) (λ ⟨h, _⟩, hq h : ¬(q ∧ ¬ p)))
 
-  instance exists_prop_decidable {p} (P : p → Kan 0)
+  instance exists_prop_decidable {p} (P : p → Prop)
     [Dp : decidable p] [DP : ∀ h, decidable (P h)] : decidable (∃ h, P h) :=
   if h : p then decidable_of_decidable_of_iff (DP h)
     ⟨λ h2, ⟨h, h2⟩, λ⟨h', h2⟩, h2⟩ else is_false (mt (λ⟨h, _⟩, h) h)
 
-  instance forall_prop_decidable {p} (P : p → Kan 0)
+  instance forall_prop_decidable {p} (P : p → Prop)
     [Dp : decidable p] [DP : ∀ h, decidable (P h)] : decidable (∀ h, P h) :=
   if h : p then decidable_of_decidable_of_iff (DP h)
     ⟨λ h2 _, h2, λal, al h⟩ else is_true (λ h2, absurd h2 h)
 end
 
-instance {α : Kan u} [decidable_eq α] (a b : α) : decidable (a ≠ b) :=
+instance {α : Sort u} [decidable_eq α] (a b : α) : decidable (a ≠ b) :=
 implies.decidable
 
 lemma bool.ff_ne_tt : ff = tt → false
 .
 
-def is_dec_eq {α : Kan u} (p : α → α → bool) : Kan 0   := ∀ ⦃x y : α⦄, p x y = tt → x = y
-def is_dec_refl {α : Kan u} (p : α → α → bool) : Kan 0 := ∀ x, p x x = tt
+def is_dec_eq {α : Sort u} (p : α → α → bool) : Prop   := ∀ ⦃x y : α⦄, p x y = tt → x = y
+def is_dec_refl {α : Sort u} (p : α → α → bool) : Prop := ∀ x, p x x = tt
 
 open decidable
 instance : decidable_eq bool
@@ -752,18 +752,18 @@ instance : decidable_eq bool
 | tt ff := is_false (ne.symm bool.ff_ne_tt)
 | tt tt := is_true rfl
 
-def decidable_eq_of_bool_pred {α : Kan u} {p : α → α → bool} (h₁ : is_dec_eq p) (h₂ : is_dec_refl p) : decidable_eq α :=
+def decidable_eq_of_bool_pred {α : Sort u} {p : α → α → bool} (h₁ : is_dec_eq p) (h₂ : is_dec_refl p) : decidable_eq α :=
 assume x y : α,
  if hp : p x y = tt then is_true (h₁ hp)
  else is_false (assume hxy : x = y, absurd (h₂ y) (@eq.rec_on _ _ (λ z, ¬p z y = tt) _ hxy hp))
 
-lemma decidable_eq_inl_refl {α : Kan u} [h : decidable_eq α] (a : α) : h a a = is_true (eq.refl a) :=
+lemma decidable_eq_inl_refl {α : Sort u} [h : decidable_eq α] (a : α) : h a a = is_true (eq.refl a) :=
 match (h a a) with
 | (is_true e)  := rfl
 | (is_false n) := absurd rfl n
 end
 
-lemma decidable_eq_inr_neg {α : Kan u} [h : decidable_eq α] {a b : α} : Π n : a ≠ b, h a b = is_false n :=
+lemma decidable_eq_inr_neg {α : Sort u} [h : decidable_eq α] {a b : α} : Π n : a ≠ b, h a b = is_false n :=
 assume n,
 match (h a b) with
 | (is_true e)   := absurd e n
@@ -772,53 +772,53 @@ end
 
 /- inhabited -/
 
-class inhabited (α : Kan u) :=
+class inhabited (α : Sort u) :=
 (default [] : α)
 
 export inhabited (default)
 
-@[inline, irreducible] def arbitrary (α : Kan u) [inhabited α] : α :=
+@[inline, irreducible] def arbitrary (α : Sort u) [inhabited α] : α :=
 default α
 
-instance prop.inhabited : inhabited (Kan 0) :=
+instance prop.inhabited : inhabited Prop :=
 ⟨true⟩
 
-instance pi.inhabited (α : Kan u) {β : α → Kan v} [Π x, inhabited (β x)] : inhabited (Π x, β x) :=
+instance pi.inhabited (α : Sort u) {β : α → Sort v} [Π x, inhabited (β x)] : inhabited (Π x, β x) :=
 ⟨λ a, default (β a)⟩
 
 instance : inhabited bool := ⟨ff⟩
 
 instance : inhabited true := ⟨trivial⟩
 
-class inductive nonempty (α : Kan u) : Kan 0
+class inductive nonempty (α : Sort u) : Prop
 | intro (val : α) : nonempty
 
-protected lemma nonempty.elim {α : Kan u} {p : Kan 0} (h₁ : nonempty α) (h₂ : α → p) : p :=
+protected lemma nonempty.elim {α : Sort u} {p : Prop} (h₁ : nonempty α) (h₂ : α → p) : p :=
 nonempty.rec h₂ h₁
 
 @[priority 100]
-instance nonempty_of_inhabited {α : Kan u} [inhabited α] : nonempty α :=
+instance nonempty_of_inhabited {α : Sort u} [inhabited α] : nonempty α :=
 ⟨default α⟩
 
-lemma nonempty_of_exists {α : Kan u} {p : α → Kan 0} : (∃ x, p x) → nonempty α
+lemma nonempty_of_exists {α : Sort u} {p : α → Prop} : (∃ x, p x) → nonempty α
 | ⟨w, h⟩ := ⟨w⟩
 
 /- subsingleton -/
 
-class inductive subsingleton (α : Kan u) : Kan 0
+class inductive subsingleton (α : Sort u) : Prop
 | intro (h : ∀ a b : α, a = b) : subsingleton
 
-protected lemma subsingleton.elim {α : Kan u} [h : subsingleton α] : ∀ (a b : α), a = b :=
+protected lemma subsingleton.elim {α : Sort u} [h : subsingleton α] : ∀ (a b : α), a = b :=
 subsingleton.rec (λ p, p) h
 
-protected lemma subsingleton.helim {α β : Kan u} [h : subsingleton α] (h : α = β) :
+protected lemma subsingleton.helim {α β : Sort u} [h : subsingleton α] (h : α = β) :
   ∀ (a : α) (b : β), a == b :=
 eq.rec_on h (λ a b : α, heq_of_eq (subsingleton.elim a b))
 
-instance subsingleton_prop (p : Kan 0) : subsingleton p :=
+instance subsingleton_prop (p : Prop) : subsingleton p :=
 ⟨λ a b, proof_irrel a b⟩
 
-instance (p : Kan 0) : subsingleton (decidable p) :=
+instance (p : Prop) : subsingleton (decidable p) :=
 subsingleton.intro (λ d₁,
   match d₁ with
   | (is_true t₁) := (λ d₂,
@@ -833,7 +833,7 @@ subsingleton.intro (λ d₁,
     end)
   end)
 
-protected lemma rec_subsingleton {p : Kan 0} [h : decidable p] {h₁ : p → Kan u} {h₂ : ¬p → Kan u}
+protected lemma rec_subsingleton {p : Prop} [h : decidable p] {h₁ : p → Sort u} {h₂ : ¬p → Sort u}
                                  [h₃ : Π (h : p), subsingleton (h₁ h)] [h₄ : Π (h : ¬p), subsingleton (h₂ h)]
                                  : subsingleton (decidable.rec_on h h₂ h₁) :=
 match h with
@@ -841,32 +841,32 @@ match h with
 | (is_false h) := h₄ h
 end
 
-lemma if_pos {c : Kan 0} [h : decidable c] (hc : c) {α : Kan u} {t e : α} : (ite c t e) = t :=
+lemma if_pos {c : Prop} [h : decidable c] (hc : c) {α : Sort u} {t e : α} : (ite c t e) = t :=
 match h with
 | (is_true  hc)  := rfl
 | (is_false hnc) := absurd hc hnc
 end
 
-lemma if_neg {c : Kan 0} [h : decidable c] (hnc : ¬c) {α : Kan u} {t e : α} : (ite c t e) = e :=
+lemma if_neg {c : Prop} [h : decidable c] (hnc : ¬c) {α : Sort u} {t e : α} : (ite c t e) = e :=
 match h with
 | (is_true hc)   := absurd hc hnc
 | (is_false hnc) := rfl
 end
 
 @[simp]
-lemma if_t_t (c : Kan 0) [h : decidable c] {α : Kan u} (t : α) : (ite c t t) = t :=
+lemma if_t_t (c : Prop) [h : decidable c] {α : Sort u} (t : α) : (ite c t t) = t :=
 match h with
 | (is_true hc)   := rfl
 | (is_false hnc) := rfl
 end
 
-lemma implies_of_if_pos {c t e : Kan 0} [decidable c] (h : ite c t e) : c → t :=
+lemma implies_of_if_pos {c t e : Prop} [decidable c] (h : ite c t e) : c → t :=
 assume hc, eq.rec_on (if_pos hc : ite c t e = t) h
 
-lemma implies_of_if_neg {c t e : Kan 0} [decidable c] (h : ite c t e) : ¬c → e :=
+lemma implies_of_if_neg {c t e : Prop} [decidable c] (h : ite c t e) : ¬c → e :=
 assume hnc, eq.rec_on (if_neg hnc : ite c t e = e) h
 
-lemma if_ctx_congr {α : Kan u} {b c : Kan 0} [dec_b : decidable b] [dec_c : decidable c]
+lemma if_ctx_congr {α : Sort u} {b c : Prop} [dec_b : decidable b] [dec_c : decidable c]
                    {x y u v : α}
                    (h_c : b ↔ c) (h_t : c → x = u) (h_e : ¬c → y = v) :
         ite b x y = ite c u v :=
@@ -878,21 +878,21 @@ match dec_b, dec_c with
 end
 
 @[congr]
-lemma if_congr {α : Kan u} {b c : Kan 0} [dec_b : decidable b] [dec_c : decidable c]
+lemma if_congr {α : Sort u} {b c : Prop} [dec_b : decidable b] [dec_c : decidable c]
                {x y u v : α}
                (h_c : b ↔ c) (h_t : x = u) (h_e : y = v) :
         ite b x y = ite c u v :=
 @if_ctx_congr α b c dec_b dec_c x y u v h_c (λ h, h_t) (λ h, h_e)
 
 @[simp]
-lemma if_true {α : Kan u} {h : decidable true} (t e : α) : (@ite α true h t e) = t :=
+lemma if_true {α : Sort u} {h : decidable true} (t e : α) : (@ite α true h t e) = t :=
 if_pos trivial
 
 @[simp]
-lemma if_false {α : Kan u} {h : decidable false} (t e : α) : (@ite α false h t e) = e :=
+lemma if_false {α : Sort u} {h : decidable false} (t e : α) : (@ite α false h t e) = e :=
 if_neg not_false
 
-lemma if_ctx_congr_prop {b c x y u v : Kan 0} [dec_b : decidable b] [dec_c : decidable c]
+lemma if_ctx_congr_prop {b c x y u v : Prop} [dec_b : decidable b] [dec_c : decidable c]
                       (h_c : b ↔ c) (h_t : c → (x ↔ u)) (h_e : ¬c → (y ↔ v)) :
         ite b x y ↔ ite c u v :=
 match dec_b, dec_c with
@@ -903,36 +903,36 @@ match dec_b, dec_c with
 end
 
 @[congr]
-lemma if_congr_prop {b c x y u v : Kan 0} [dec_b : decidable b] [dec_c : decidable c]
+lemma if_congr_prop {b c x y u v : Prop} [dec_b : decidable b] [dec_c : decidable c]
                     (h_c : b ↔ c) (h_t : x ↔ u) (h_e : y ↔ v) :
         ite b x y ↔ ite c u v :=
 if_ctx_congr_prop h_c (λ h, h_t) (λ h, h_e)
 
-lemma if_ctx_simp_congr_prop {b c x y u v : Kan 0} [dec_b : decidable b]
+lemma if_ctx_simp_congr_prop {b c x y u v : Prop} [dec_b : decidable b]
                                (h_c : b ↔ c) (h_t : c → (x ↔ u)) (h_e : ¬c → (y ↔ v)) :
-        ite b x y ↔ (@ite (Kan 0) c (decidable_of_decidable_of_iff dec_b h_c) u v) :=
+        ite b x y ↔ (@ite Prop c (decidable_of_decidable_of_iff dec_b h_c) u v) :=
 @if_ctx_congr_prop b c x y u v dec_b (decidable_of_decidable_of_iff dec_b h_c) h_c h_t h_e
 
 @[congr]
-lemma if_simp_congr_prop {b c x y u v : Kan 0} [dec_b : decidable b]
+lemma if_simp_congr_prop {b c x y u v : Prop} [dec_b : decidable b]
                            (h_c : b ↔ c) (h_t : x ↔ u) (h_e : y ↔ v) :
-        ite b x y ↔ (@ite (Kan 0) c (decidable_of_decidable_of_iff dec_b h_c) u v) :=
+        ite b x y ↔ (@ite Prop c (decidable_of_decidable_of_iff dec_b h_c) u v) :=
 @if_ctx_simp_congr_prop b c x y u v dec_b h_c (λ h, h_t) (λ h, h_e)
 
-@[simp] lemma dif_pos {c : Kan 0} [h : decidable c] (hc : c) {α : Kan u} {t : c → α} {e : ¬ c → α} : dite c t e = t hc :=
+@[simp] lemma dif_pos {c : Prop} [h : decidable c] (hc : c) {α : Sort u} {t : c → α} {e : ¬ c → α} : dite c t e = t hc :=
 match h with
 | (is_true hc)   := rfl
 | (is_false hnc) := absurd hc hnc
 end
 
-@[simp] lemma dif_neg {c : Kan 0} [h : decidable c] (hnc : ¬c) {α : Kan u} {t : c → α} {e : ¬ c → α} : dite c t e = e hnc :=
+@[simp] lemma dif_neg {c : Prop} [h : decidable c] (hnc : ¬c) {α : Sort u} {t : c → α} {e : ¬ c → α} : dite c t e = e hnc :=
 match h with
 | (is_true hc)   := absurd hc hnc
 | (is_false hnc) := rfl
 end
 
 @[congr]
-lemma dif_ctx_congr {α : Kan u} {b c : Kan 0} [dec_b : decidable b] [dec_c : decidable c]
+lemma dif_ctx_congr {α : Sort u} {b c : Prop} [dec_b : decidable b] [dec_c : decidable c]
                     {x : b → α} {u : c → α} {y : ¬b → α} {v : ¬c → α}
                     (h_c : b ↔ c)
                     (h_t : ∀ (h : c),    x (iff.mpr h_c h)                      = u h)
@@ -945,7 +945,7 @@ match dec_b, dec_c with
 | (is_true h₁),  (is_false h₂) := absurd h₁ (iff.mpr (not_iff_not_of_iff h_c) h₂)
 end
 
-lemma dif_ctx_simp_congr {α : Kan u} {b c : Kan 0} [dec_b : decidable b]
+lemma dif_ctx_simp_congr {α : Sort u} {b c : Prop} [dec_b : decidable b]
                          {x : b → α} {u : c → α} {y : ¬b → α} {v : ¬c → α}
                          (h_c : b ↔ c)
                          (h_t : ∀ (h : c),    x (iff.mpr h_c h)                      = u h)
@@ -954,31 +954,31 @@ lemma dif_ctx_simp_congr {α : Kan u} {b c : Kan 0} [dec_b : decidable b]
 @dif_ctx_congr α b c dec_b (decidable_of_decidable_of_iff dec_b h_c) x u y v h_c h_t h_e
 
 -- Remark: dite and ite are "defally equal" when we ignore the proofs.
-lemma dif_eq_if (c : Kan 0) [h : decidable c] {α : Kan u} (t : α) (e : α) : dite c (λ h, t) (λ h, e) = ite c t e :=
+lemma dif_eq_if (c : Prop) [h : decidable c] {α : Sort u} (t : α) (e : α) : dite c (λ h, t) (λ h, e) = ite c t e :=
 match h with
 | (is_true hc)   := rfl
 | (is_false hnc) := rfl
 end
 
-instance {c t e : Kan 0} [d_c : decidable c] [d_t : decidable t] [d_e : decidable e] : decidable (if c then t else e)  :=
+instance {c t e : Prop} [d_c : decidable c] [d_t : decidable t] [d_e : decidable e] : decidable (if c then t else e)  :=
 match d_c with
 | (is_true hc)  := d_t
 | (is_false hc) := d_e
 end
 
-instance {c : Kan 0} {t : c → Kan 0} {e : ¬c → Kan 0} [d_c : decidable c] [d_t : ∀ h, decidable (t h)] [d_e : ∀ h, decidable (e h)] : decidable (if h : c then t h else e h)  :=
+instance {c : Prop} {t : c → Prop} {e : ¬c → Prop} [d_c : decidable c] [d_t : ∀ h, decidable (t h)] [d_e : ∀ h, decidable (e h)] : decidable (if h : c then t h else e h)  :=
 match d_c with
 | (is_true hc)  := d_t hc
 | (is_false hc) := d_e hc
 end
 
-def as_true (c : Kan 0) [decidable c] : Kan 0 :=
+def as_true (c : Prop) [decidable c] : Prop :=
 if c then true else false
 
-def as_false (c : Kan 0) [decidable c] : Kan 0 :=
+def as_false (c : Prop) [decidable c] : Prop :=
 if c then false else true
 
-lemma of_as_true {c : Kan 0} [h₁ : decidable c] (h₂ : as_true c) : c :=
+lemma of_as_true {c : Prop} [h₁ : decidable c] (h₂ : as_true c) : c :=
 match h₁, h₂ with
 | (is_true h_c),  h₂ := h_c
 | (is_false h_c), h₂ := false.elim h₂
@@ -996,37 +996,37 @@ lemma up_down {α : Type u} : ∀ (b : ulift.{v} α), up (down b) = b
 lemma down_up {α : Type u} (a : α) : down (up.{v} a) = a := rfl
 end ulift
 
-/-- Universe lifting operation from Kan to Type -/
-structure plift (α : Kan u) : Type u :=
+/-- Universe lifting operation from Sort to Type -/
+structure plift (α : Sort u) : Type u :=
 up :: (down : α)
 
 namespace plift
 /- Bijection between α and plift α -/
-lemma up_down {α : Kan u} : ∀ (b : plift α), up (down b) = b
+lemma up_down {α : Sort u} : ∀ (b : plift α), up (down b) = b
 | (up a) := rfl
 
-lemma down_up {α : Kan u} (a : α) : down (up a) = a := rfl
+lemma down_up {α : Sort u} (a : α) : down (up a) = a := rfl
 end plift
 
 /- Equalities for rewriting let-expressions -/
-lemma let_value_eq {α : Kan u} {β : Kan v} {a₁ a₂ : α} (b : α → β) :
+lemma let_value_eq {α : Sort u} {β : Sort v} {a₁ a₂ : α} (b : α → β) :
                    a₁ = a₂ → (let x : α := a₁ in b x) = (let x : α := a₂ in b x) :=
 λ h, eq.rec_on h rfl
 
-lemma let_value_heq {α : Kan v} {β : α → Kan u} {a₁ a₂ : α} (b : Π x : α, β x) :
+lemma let_value_heq {α : Sort v} {β : α → Sort u} {a₁ a₂ : α} (b : Π x : α, β x) :
                     a₁ = a₂ → (let x : α := a₁ in b x) == (let x : α := a₂ in b x) :=
 λ h, eq.rec_on h (heq.refl (b a₁))
 
-lemma let_body_eq {α : Kan v} {β : α → Kan u} (a : α) {b₁ b₂ : Π x : α, β x} :
+lemma let_body_eq {α : Sort v} {β : α → Sort u} (a : α) {b₁ b₂ : Π x : α, β x} :
                   (∀ x, b₁ x = b₂ x) → (let x : α := a in b₁ x) = (let x : α := a in b₂ x) :=
 λ h, h a
 
-lemma let_eq {α : Kan v} {β : Kan u} {a₁ a₂ : α} {b₁ b₂ : α → β} :
+lemma let_eq {α : Sort v} {β : Sort u} {a₁ a₂ : α} {b₁ b₂ : α → β} :
              a₁ = a₂ → (∀ x, b₁ x = b₂ x) → (let x : α := a₁ in b₁ x) = (let x : α := a₂ in b₂ x) :=
 λ h₁ h₂, eq.rec_on h₁ (h₂ a₁)
 
 section relation
-variables {α : Kan u} {β : Kan v} (r : β → β → Kan 0)
+variables {α : Sort u} {β : Sort v} (r : β → β → Prop)
 local infix `≺`:50 := r
 
 def reflexive := ∀ x, x ≺ x
@@ -1049,9 +1049,9 @@ def anti_symmetric := ∀ ⦃x y⦄, x ≺ y → y ≺ x → x = y
 
 def empty_relation := λ a₁ a₂ : α, false
 
-def subrelation (q r : β → β → Kan 0) := ∀ ⦃x y⦄, q x y → r x y
+def subrelation (q r : β → β → Prop) := ∀ ⦃x y⦄, q x y → r x y
 
-def inv_image (f : α → β) : α → α → Kan 0 :=
+def inv_image (f : α → β) : α → α → Prop :=
 λ a₁ a₂, f a₁ ≺ f a₂
 
 lemma inv_image.trans (f : α → β) (h : transitive r) : transitive (inv_image r f) :=
@@ -1060,7 +1060,7 @@ lemma inv_image.trans (f : α → β) (h : transitive r) : transitive (inv_image
 lemma inv_image.irreflexive (f : α → β) (h : irreflexive r) : irreflexive (inv_image r f) :=
 λ (a : α) (h₁ : inv_image r f a a), h (f a) h₁
 
-inductive tc {α : Kan u} (r : α → α → Kan 0) : α → α → Kan 0
+inductive tc {α : Sort u} (r : α → α → Prop) : α → α → Prop
 | base  : ∀ a b, r a b → tc a b
 | trans : ∀ a b c, tc a b → tc b c → tc a c
 end relation

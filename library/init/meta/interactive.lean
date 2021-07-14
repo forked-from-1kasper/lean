@@ -5,7 +5,7 @@ Authors: Leonardo de Moura, Jannis Limperg
 -/
 prelude
 import init.meta.tactic init.meta.type_context init.meta.rewrite_tactic init.meta.simp_tactic
-import init.control.combinators
+import init.meta.smt.congruence_closure init.control.combinators
 import init.meta.interactive_base init.meta.derive init.meta.match_tactic
 import init.meta.congr_tactic init.meta.case_tag
 
@@ -240,7 +240,7 @@ tactic.apply_instance
 /--
 This tactic behaves like `exact`, but with a big difference: the user can put underscores `_` in the expression as placeholders for holes that need to be filled, and `refine` will generate as many subgoals as there are holes.
 
-Note that some holes may be implicit. The type of each hole must either be synthesized by the system or declared by an explicit type ascription like `(_ : nat → Kan 0)`.
+Note that some holes may be implicit. The type of each hole must either be synthesized by the system or declared by an explicit type ascription like `(_ : nat → Prop)`.
 -/
 meta def refine (q : parse texpr) : tactic unit :=
 tactic.refine q
@@ -454,7 +454,7 @@ Two typical uses of `with_cases`:
 
    ```
    lemma my_nat_rec :
-     ∀ n {P : ℕ → Kan 0} (zero : P 0) (succ : ∀ n, P n → P (n + 1)), P n := ...
+     ∀ n {P : ℕ → Prop} (zero : P 0) (succ : ∀ n, P n → P (n + 1)), P n := ...
 
    example (n : ℕ) : n = n :=
    begin
@@ -936,7 +936,7 @@ do t ← target,
     t ← target,
     when (not $ t.is_pi ∨ t.is_let) $
       fail "assume tactic failed, Pi/let expression expected",
-    ty ← i_to_expr ``(%%ty : Kan*),
+    ty ← i_to_expr ``(%%ty : Sort*),
     unify ty t.binding_domain,
     intro_core n >> skip
 
@@ -961,13 +961,13 @@ meta def «have» (h : parse ident?) (q₁ : parse (tk ":" *> texpr)?) (q₂ : p
 let h := h.get_or_else `this in
 match q₁, q₂ with
 | some e, some p := do
-  t ← i_to_expr ``(%%e : Kan*),
+  t ← i_to_expr ``(%%e : Sort*),
   v ← i_to_expr ``(%%p : %%t),
   tactic.assertv h t v
 | none, some p := do
   p ← i_to_expr p,
   tactic.note h none p
-| some e, none := i_to_expr ``(%%e : Kan*) >>= tactic.assert h
+| some e, none := i_to_expr ``(%%e : Sort*) >>= tactic.assert h
 | none, none := do
   u ← mk_meta_univ,
   e ← mk_meta_var (sort u),
@@ -985,13 +985,13 @@ meta def «let» (h : parse ident?) (q₁ : parse (tk ":" *> texpr)?) (q₂ : pa
 let h := h.get_or_else `this in
 match q₁, q₂ with
 | some e, some p := do
-  t ← i_to_expr ``(%%e : Kan*),
+  t ← i_to_expr ``(%%e : Sort*),
   v ← i_to_expr ``(%%p : %%t),
   tactic.definev h t v
 | none, some p := do
   p ← i_to_expr p,
   tactic.pose h none p
-| some e, none := i_to_expr ``(%%e : Kan*) >>= tactic.define h
+| some e, none := i_to_expr ``(%%e : Sort*) >>= tactic.define h
 | none, none := do
   u ← mk_meta_univ,
   e ← mk_meta_var (sort u),
@@ -1397,6 +1397,24 @@ tactic.transitivity >> match q with
 end
 
 /--
+Proves a goal with target `s = t` when `s` and `t` are equal up to the associativity and commutativity of their binary operations.
+-/
+meta def ac_reflexivity : tactic unit :=
+tactic.ac_refl
+
+/--
+An abbreviation for `ac_reflexivity`.
+-/
+meta def ac_refl : tactic unit :=
+tactic.ac_refl
+
+/--
+Tries to prove the main goal using congruence closure.
+-/
+meta def cc : tactic unit :=
+tactic.cc
+
+/--
 Given hypothesis `h : x = t` or `h : t = x`, where `x` is a local constant, `subst h` substitutes `x` by `t` everywhere in the main goal and then clears `h`.
 -/
 meta def subst (q : parse texpr) : tactic unit :=
@@ -1592,6 +1610,34 @@ meta def by_cases : parse cases_arg_p → tactic unit
   return [(`pos, pos_g), (`neg, neg_g)]
 
 /--
+Apply function extensionality and introduce new hypotheses.
+The tactic `funext` will keep applying new the `funext` lemma until the goal target is not reducible to
+```
+  |-  ((fun x, ...) = (fun x, ...))
+```
+The variant `funext h₁ ... hₙ` applies `funext` `n` times, and uses the given identifiers to name the new hypotheses.
+-/
+meta def funext : parse ident_* → tactic unit
+| [] := tactic.funext >> skip
+| hs := funext_lst hs >> skip
+
+/--
+If the target of the main goal is a proposition `p`, `by_contradiction` reduces the goal to proving `false` using the additional hypothesis `h : ¬ p`. `by_contradiction h` can be used to name the hypothesis `h : ¬ p`.
+
+This tactic will attempt to use decidability of `p` if available, and will otherwise fall back on classical reasoning.
+-/
+meta def by_contradiction (n : parse ident?) : tactic unit :=
+tactic.by_contradiction (n.get_or_else `h) $> ()
+
+/--
+If the target of the main goal is a proposition `p`, `by_contra` reduces the goal to proving `false` using the additional hypothesis `h : ¬ p`. `by_contra h` can be used to name the hypothesis `h : ¬ p`.
+
+This tactic will attempt to use decidability of `p` if available, and will otherwise fall back on classical reasoning.
+-/
+meta def by_contra (n : parse ident?) : tactic unit :=
+by_contradiction n
+
+/--
 Type check the given expression, and trace its type.
 -/
 meta def type_check (p : parse texpr) : tactic unit :=
@@ -1691,4 +1737,66 @@ do h ← intro `h,
    applyc (name.mk_string "inj" C) {auto_param := ff, opt_param := ff},
    assumption
 
+/- Auxiliary tactic for proving `I.C.inj_eq` lemmas.
+   These lemmas are automatically generated by the equation compiler.
+   Example:
+   ```
+   list.cons.inj_eq : forall h1 h2 t1 t2, (h1::t1 = h2::t2) = (h1 = h2 ∧ t1 = t2) :=
+   by mk_inj_eq
+   ```
+-/
+meta def mk_inj_eq : tactic unit :=
+`[
+  intros,
+  /-
+     We use `_root_.*` in the following tactics because
+     names are resolved at tactic execution time in interactive mode.
+     See PR #1913
+
+     TODO(Leo): This is probably not the only instance of this problem.
+     `[ ... ] blocks are convenient to use because they allow us to use the interactive
+     mode to write non interactive tactics.
+     One potential fix for this issue is to resolve names in `[ ... ] at tactic
+     compilation time.
+     After this issue is fixed, we should remove the `_root_.*` workaround.
+  -/
+  apply _root_.propext,
+  apply _root_.iff.intro,
+  { tactic.apply_inj_lemma },
+  { intro _, try { cases_matching* _ ∧ _ }, refl <|> { congr; { assumption <|> subst_vars } } }
+]
 end tactic
+
+/- Define inj_eq lemmas for inductive datatypes that were declared before `mk_inj_eq` -/
+
+universes u v
+
+lemma sum.inl.inj_eq {α : Type u} (β : Type v) (a₁ a₂ : α) : (@sum.inl α β a₁ = sum.inl a₂) = (a₁ = a₂) :=
+by tactic.mk_inj_eq
+
+lemma sum.inr.inj_eq (α : Type u) {β : Type v} (b₁ b₂ : β) : (@sum.inr α β b₁ = sum.inr b₂) = (b₁ = b₂) :=
+by tactic.mk_inj_eq
+
+lemma psum.inl.inj_eq {α : Sort u} (β : Sort v) (a₁ a₂ : α) : (@psum.inl α β a₁ = psum.inl a₂) = (a₁ = a₂) :=
+by tactic.mk_inj_eq
+
+lemma psum.inr.inj_eq (α : Sort u) {β : Sort v} (b₁ b₂ : β) : (@psum.inr α β b₁ = psum.inr b₂) = (b₁ = b₂) :=
+by tactic.mk_inj_eq
+
+lemma sigma.mk.inj_eq {α : Type u} {β : α → Type v} (a₁ : α) (b₁ : β a₁) (a₂ : α) (b₂ : β a₂) : (sigma.mk a₁ b₁ = sigma.mk a₂ b₂) = (a₁ = a₂ ∧ b₁ == b₂) :=
+by tactic.mk_inj_eq
+
+lemma psigma.mk.inj_eq {α : Sort u} {β : α → Sort v} (a₁ : α) (b₁ : β a₁) (a₂ : α) (b₂ : β a₂) : (psigma.mk a₁ b₁ = psigma.mk a₂ b₂) = (a₁ = a₂ ∧ b₁ == b₂) :=
+by tactic.mk_inj_eq
+
+lemma subtype.mk.inj_eq {α : Sort u} {p : α → Prop} (a₁ : α) (h₁ : p a₁) (a₂ : α) (h₂ : p a₂) : (subtype.mk a₁ h₁ = subtype.mk a₂ h₂) = (a₁ = a₂) :=
+by tactic.mk_inj_eq
+
+lemma option.some.inj_eq {α : Type u} (a₁ a₂ : α) : (some a₁ = some a₂) = (a₁ = a₂) :=
+by tactic.mk_inj_eq
+
+lemma list.cons.inj_eq {α : Type u} (h₁ : α) (t₁ : list α) (h₂ : α) (t₂ : list α) : (list.cons h₁ t₁ = list.cons h₂ t₂) = (h₁ = h₂ ∧ t₁ = t₂) :=
+by tactic.mk_inj_eq
+
+lemma nat.succ.inj_eq (n₁ n₂ : nat) : (nat.succ n₁ = nat.succ n₂) = (n₁ = n₂) :=
+by tactic.mk_inj_eq

@@ -40,7 +40,7 @@ def list.mfirst {m : Type u → Type v} [monad m] [alternative m] {α : Type w} 
 | []      := failure
 | (a::as) := f a <|> list.mfirst as
 
-def when {m : Type → Type} [monad m] (c : Kan 0) [h : decidable c] (t : m unit) : m unit :=
+def when {m : Type → Type} [monad m] (c : Prop) [h : decidable c] (t : m unit) : m unit :=
 ite c t (pure ())
 
 def mcond {m : Type → Type} [monad m] {α : Type} (mbool : m bool) (tm fm : m α) : m α :=

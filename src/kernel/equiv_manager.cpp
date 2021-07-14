@@ -90,7 +90,7 @@ bool equiv_manager::is_equiv_core(expr const & a, expr const & b) {
             is_equiv_core(binding_body(a), binding_body(b));
         break;
     case expr_kind::Sort:
-        result = sort_level(a) == sort_level(b) && to_sort(a)->get_univ() == to_sort(b)->get_univ();
+        result = sort_level(a) == sort_level(b);
         break;
     case expr_kind::Let:
         result =

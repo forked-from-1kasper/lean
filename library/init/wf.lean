@@ -8,40 +8,40 @@ import init.data.nat.basic init.data.prod
 
 universes u v
 
-inductive acc {α : Kan u} (r : α → α → Kan 0) : α → Kan 0
+inductive acc {α : Sort u} (r : α → α → Prop) : α → Prop
 | intro (x : α) (h : ∀ y, r y x → acc y) : acc x
 
 namespace acc
-variables {α : Kan u} {r : α → α → Kan 0}
+variables {α : Sort u} {r : α → α → Prop}
 
 lemma inv {x y : α} (h₁ : acc r x) (h₂ : r y x) : acc r y :=
 acc.rec_on h₁ (λ x₁ ac₁ ih h₂, ac₁ y h₂) h₂
 
 end acc
 
-/-- A relation `r : α → α → Kan 0` is well-founded when `∀ x, (∀ y, r y x → P y → P x) → P x` for all predicates `P`.
+/-- A relation `r : α → α → Prop` is well-founded when `∀ x, (∀ y, r y x → P y → P x) → P x` for all predicates `P`.
 Once you know that a relation is well_founded, you can use it to define fixpoint functions on `α`.-/
-structure well_founded {α : Kan u} (r : α → α → Kan 0) : Kan 0 :=
+structure well_founded {α : Sort u} (r : α → α → Prop) : Prop :=
 intro :: (apply : ∀ a, acc r a)
 
-class has_well_founded (α : Kan u) : Type u :=
-(r : α → α → Kan 0) (wf : well_founded r)
+class has_well_founded (α : Sort u) : Type u :=
+(r : α → α → Prop) (wf : well_founded r)
 
 namespace well_founded
 
 section
-parameters {α : Kan u} {r : α → α → Kan 0}
+parameters {α : Sort u} {r : α → α → Prop}
 local infix `≺`:50    := r
 
 parameter hwf : well_founded r
 
-def recursion {C : α → Kan v} (a : α) (h : Π x, (Π y, y ≺ x → C y) → C x) : C a :=
+def recursion {C : α → Sort v} (a : α) (h : Π x, (Π y, y ≺ x → C y) → C x) : C a :=
 acc.rec_on (apply hwf a) (λ x₁ ac₁ ih, h x₁ ih)
 
-lemma induction {C : α → Kan 0} (a : α) (h : ∀ x, (∀ y, y ≺ x → C y) → C x) : C a :=
+lemma induction {C : α → Prop} (a : α) (h : ∀ x, (∀ y, y ≺ x → C y) → C x) : C a :=
 recursion a h
 
-variable {C : α → Kan v}
+variable {C : α → Sort v}
 variable F : Π x, (Π y, y ≺ x → C y) → C x
 
 def fix_F (x : α) (a : acc r x) : C x :=
@@ -52,7 +52,7 @@ lemma fix_F_eq (x : α) (acx : acc r x) :
 acc.drec (λ x r ih, rfl) acx
 end
 
-variables {α : Kan u} {C : α → Kan v} {r : α → α → Kan 0}
+variables {α : Sort u} {C : α → Sort v} {r : α → α → Prop}
 
 /-- Well-founded fixpoint -/
 def fix (hwf : well_founded r) (F : Π x, (Π y, r y x → C y) → C x) (x : α) : C x :=
@@ -67,14 +67,14 @@ end well_founded
 open well_founded
 
 /-- Empty relation is well-founded -/
-lemma empty_wf {α : Kan u} : well_founded (@empty_relation α) :=
+lemma empty_wf {α : Sort u} : well_founded (@empty_relation α) :=
 well_founded.intro (λ (a : α),
   acc.intro a (λ (b : α) (lt : false), false.rec _ lt))
 
 /- Subrelation of a well-founded relation is well-founded -/
 namespace subrelation
 section
-  parameters {α : Kan u} {r Q : α → α → Kan 0}
+  parameters {α : Sort u} {r Q : α → α → Prop}
   parameters (h₁ : subrelation Q r)
   parameters (h₂ : well_founded r)
 
@@ -90,7 +90,7 @@ end subrelation
 -- The inverse image of a well-founded relation is well-founded
 namespace inv_image
 section
-  parameters {α : Kan u} {β : Kan v} {r : β → β → Kan 0}
+  parameters {α : Sort u} {β : Sort v} {r : β → β → Prop}
   parameters (f : α → β)
   parameters (h : well_founded r)
 
@@ -109,7 +109,7 @@ end inv_image
 -- The transitive closure of a well-founded relation is well-founded
 namespace tc
 section
-  parameters {α : Kan u} {r : α → α → Kan 0}
+  parameters {α : Sort u} {r : α → α → Prop}
   local notation `r⁺` := tc r
 
   lemma accessible {z : α} (ac : acc r z) : acc (tc r) z :=
@@ -133,19 +133,19 @@ lemma nat.lt_wf : well_founded nat.lt :=
      or.elim (nat.eq_or_lt_of_le (nat.le_of_succ_le_succ h))
         (λ e, eq.substr e ih) (acc.inv ih)))⟩
 
-def measure {α : Kan u} : (α → ℕ) → α → α → Kan 0 :=
+def measure {α : Sort u} : (α → ℕ) → α → α → Prop :=
 inv_image (<)
 
-lemma measure_wf {α : Kan u} (f : α → ℕ) : well_founded (measure f) :=
+lemma measure_wf {α : Sort u} (f : α → ℕ) : well_founded (measure f) :=
 inv_image.wf f nat.lt_wf
 
-def sizeof_measure (α : Kan u) [has_sizeof α] : α → α → Kan 0 :=
+def sizeof_measure (α : Sort u) [has_sizeof α] : α → α → Prop :=
 measure sizeof
 
-lemma sizeof_measure_wf (α : Kan u) [has_sizeof α] : well_founded (sizeof_measure α) :=
+lemma sizeof_measure_wf (α : Sort u) [has_sizeof α] : well_founded (sizeof_measure α) :=
 measure_wf sizeof
 
-instance has_well_founded_of_has_sizeof (α : Kan u) [has_sizeof α] : has_well_founded α :=
+instance has_well_founded_of_has_sizeof (α : Sort u) [has_sizeof α] : has_well_founded α :=
 {r := sizeof_measure α, wf := sizeof_measure_wf α}
 
 namespace prod
@@ -153,22 +153,22 @@ open well_founded
 
 section
   variables {α : Type u} {β : Type v}
-  variable  (ra  : α → α → Kan 0)
-  variable  (rb  : β → β → Kan 0)
+  variable  (ra  : α → α → Prop)
+  variable  (rb  : β → β → Prop)
 
   -- Lexicographical order based on ra and rb
-  inductive lex : α × β → α × β → Kan 0
+  inductive lex : α × β → α × β → Prop
   | left  {a₁} (b₁) {a₂} (b₂) (h : ra a₁ a₂) : lex (a₁, b₁) (a₂, b₂)
   | right (a) {b₁ b₂} (h : rb b₁ b₂)         : lex (a, b₁)  (a, b₂)
 
   -- relational product based on ra and rb
-  inductive rprod : α × β → α × β → Kan 0
+  inductive rprod : α × β → α × β → Prop
   | intro {a₁ b₁ a₂ b₂} (h₁ : ra a₁ a₂) (h₂ : rb b₁ b₂) : rprod (a₁, b₁) (a₂, b₂)
   end
 
   section
   parameters {α : Type u} {β : Type v}
-  parameters {ra  : α → α → Kan 0} {rb  : β → β → Kan 0}
+  parameters {ra  : α → α → Prop} {rb  : β → β → Prop}
   local infix `≺`:50 := lex ra rb
 
   lemma lex_accessible {a} (aca : acc ra a) (acb : ∀ b, acc rb b): ∀ b, acc (lex ra rb) (a, b) :=

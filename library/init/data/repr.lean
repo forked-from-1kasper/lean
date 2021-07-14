@@ -37,7 +37,7 @@ has_repr.repr
 instance : has_repr bool :=
 ⟨λ b, cond b "tt" "ff"⟩
 
-instance {p : Kan 0} : has_repr (decidable p) :=
+instance {p : Prop} : has_repr (decidable p) :=
 -- Remark: type class inference will not consider local instance `b` in the new elaborator
 ⟨λ b : decidable p, @ite _ p b "tt" "ff"⟩
 
@@ -68,7 +68,7 @@ instance {α : Type u} {β : Type v} [has_repr α] [has_repr β] : has_repr (α 
 instance {α : Type u} {β : α → Type v} [has_repr α] [s : ∀ x, has_repr (β x)] : has_repr (sigma β) :=
 ⟨λ ⟨a, b⟩, "⟨"  ++ repr a ++ ", " ++ repr b ++ "⟩"⟩
 
-instance {α : Type u} {p : α → Kan 0} [has_repr α] : has_repr (subtype p) :=
+instance {α : Type u} {p : α → Prop} [has_repr α] : has_repr (subtype p) :=
 ⟨λ s, repr (val s)⟩
 
 namespace nat

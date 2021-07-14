@@ -85,7 +85,7 @@ meta constant macro_def : Type
 meta inductive expr (elaborated : bool := tt)
 /- A bound variable with a de-Bruijn index. -/
 | var         : nat → expr
-/- A type universe: `Kan u` -/
+/- A type universe: `Sort u` -/
 | sort        : level → expr
 /- A global constant. These include definitions, constants and inductive type stuff present
 in the environment as well as hard-coded definitions. -/
@@ -259,13 +259,13 @@ meta constant expr.get_delayed_abstraction_locals : expr → option (list name)
 
     The quotation expression `` `(a) `` (outside of patterns) is equivalent to `reflect a`
     and thus can be used as an explicit way of inferring an instance of `reflected a`. -/
-@[class] meta def reflected {α : Kan u} : α → Type :=
+@[class] meta def reflected {α : Sort u} : α → Type :=
 λ _, expr
 
-@[inline] meta def reflected.to_expr {α : Kan u} {a : α} : reflected a → expr :=
+@[inline] meta def reflected.to_expr {α : Sort u} {a : α} : reflected a → expr :=
 id
 
-@[inline] meta def reflected.subst {α : Kan v} {β : α → Kan u} {f : Π a : α, β a} {a : α} :
+@[inline] meta def reflected.subst {α : Sort v} {β : α → Sort u} {f : Π a : α, β a} {a : α} :
   reflected f → reflected a → reflected (f a) :=
 expr.subst
 
@@ -274,10 +274,10 @@ attribute [irreducible] reflected reflected.subst reflected.to_expr
 @[instance] protected meta constant expr.reflect (e : expr elab) : reflected e
 @[instance] protected meta constant string.reflect (s : string) : reflected s
 
-@[inline] meta instance {α : Kan u} (a : α) : has_coe (reflected a) expr :=
+@[inline] meta instance {α : Sort u} (a : α) : has_coe (reflected a) expr :=
 ⟨reflected.to_expr⟩
 
-protected meta def reflect {α : Kan u} (a : α) [h : reflected a] : reflected a := h
+protected meta def reflect {α : Sort u} (a : α) [h : reflected a] : reflected a := h
 
 meta instance {α} (a : α) : has_to_format (reflected a) :=
 ⟨λ h, to_fmt h.to_expr⟩
@@ -285,7 +285,7 @@ meta instance {α} (a : α) : has_to_format (reflected a) :=
 namespace expr
 open decidable
 
-meta def lt_prop (a b : expr) : Kan 0 :=
+meta def lt_prop (a b : expr) : Prop :=
 expr.lt a b = tt
 
 meta instance : decidable_rel expr.lt_prop :=
@@ -426,7 +426,7 @@ meta def is_or : expr → option (expr × expr)
 | _             := none
 
 meta def is_iff : expr → option (expr × expr)
-| `((%%a : Kan 0) ↔ %%b) := some (a, b)
+| `((%%a : Prop) ↔ %%b) := some (a, b)
 | _                     := none
 
 meta def is_eq : expr → option (expr × expr)
