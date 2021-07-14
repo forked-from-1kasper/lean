@@ -8,10 +8,6 @@ Author: Leonardo de Moura
 #include <vector>
 #include "util/test.h"
 #include "shell/lean_js.h"
-#if defined(LEAN_EMSCRIPTEN)
-#include <emscripten.h>
-#include "shell/emscripten.h"
-#endif
 using namespace lean;
 
 int main() {

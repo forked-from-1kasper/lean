@@ -25,22 +25,12 @@ Author: Leonardo de Moura, Gabriel Ebner
 #include <dirent.h>
 #endif
 
-#if defined(LEAN_EMSCRIPTEN)
-#include <emscripten.h>
-#endif
-
 namespace lean {
 file_not_found_exception::file_not_found_exception(std::string const & fname):
         exception(sstream() << "file '" << fname << "' not found"),
         m_fname(fname) {}
 
-#if defined(LEAN_EMSCRIPTEN)
-// emscripten version
-static char g_path_sep     = ':';
-static constexpr char g_sep          = '/';
-static char g_bad_sep      = '\\';
-bool is_path_sep(char c) { return c == g_path_sep; }
-#elif defined(LEAN_WINDOWS) && !defined(LEAN_CYGWIN)
+#if defined(LEAN_WINDOWS) && !defined(LEAN_CYGWIN)
 // Windows version
 static char g_path_sep     = ';';
 static constexpr char g_sep          = '\\';

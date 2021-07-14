@@ -20,11 +20,6 @@ Author: Gabriel Ebner
 #include "checker/text_import.h"
 #include "checker/simple_pp.h"
 
-#if defined(LEAN_EMSCRIPTEN)
-#include <emscripten.h>
-#include "shell/emscripten.h"
-#endif
-
 using namespace lean;  // NOLINT
 
 struct checker_print_fn {

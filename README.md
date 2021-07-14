@@ -1,17 +1,4 @@
-<p align=center><a href="https://leanprover-community.github.io"><img src="https://leanprover.github.io/images/lean_logo.svg" alt="logo" width="300px"/></a></p>
-<table>
-  <tr>
-    <th>License</th><th>Continuous integration</th><th>Chat</th>
-  </tr>
-  <tr>
-    <td><a href="LICENSE"><img src="https://img.shields.io/badge/license-APACHE_2-green.svg?dummy" title="License"/></a></td>
-    <td>
-      <a href="https://github.com/leanprover-community/lean/actions"><img src="https://github.com/leanprover-community/lean/workflows/lean%20core%20build/badge.svg?branch=master" alt="github actions"/></a>
-      <a href="https://app.bors.tech/repositories/24760"><img src="https://bors.tech/images/badge_small.svg" alt="Bors enabled"/></a>
-    </td>
-    <td><a href="https://leanprover.zulipchat.com"><img src="https://img.shields.io/badge/zulip-join_chat-brightgreen.svg" alt="Join the Zulip chat"/></a></td>
-  </tr>
-</table>
+<a href="LICENSE"><img src="https://img.shields.io/badge/license-APACHE_2-green.svg?dummy" title="License"/></a>
 
 About
 -----

@@ -10,9 +10,7 @@ Author: Leonardo de Moura
 #include <string>
 #include <memory>
 #include <cstdlib>
-#if defined(LEAN_EMSCRIPTEN)
-#include <emscripten.h>
-#endif
+
 #if !defined(LEAN_WINDOWS) || defined(LEAN_CYGWIN)
 // Support for pid
 #include<unistd.h>

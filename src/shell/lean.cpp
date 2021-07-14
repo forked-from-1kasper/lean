@@ -59,10 +59,6 @@ Author: Leonardo de Moura
 #if defined(LEAN_JSON)
 #include "shell/server.h"
 #endif
-#if defined(LEAN_EMSCRIPTEN)
-#include <emscripten.h>
-#include "shell/emscripten.h"
-#endif
 #include "githash.h" // NOLINT
 
 #ifdef _MSC_VER
