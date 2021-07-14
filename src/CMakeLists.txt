@@ -389,7 +389,6 @@ add_library(leanstatic ${LEAN_LIBRARY_TYPE} ${LEAN_OBJS})
 target_link_libraries(leanstatic ${EXTRA_LIBS})
 
 add_subdirectory(shell)
-add_subdirectory(tests/shell)
 
 function(add_exec_test name tgt)
     add_test(NAME ${name} COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${tgt})
