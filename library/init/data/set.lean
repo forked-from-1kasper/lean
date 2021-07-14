@@ -86,10 +86,4 @@ def image (f : α → β) (s : set α) : set β :=
 instance : functor set :=
 { map := @set.image }
 
-instance : is_lawful_functor set :=
-{ id_map := λ _ s, funext $ λ b, propext ⟨λ ⟨_, sb, rfl⟩, sb, λ sb, ⟨_, sb, rfl⟩⟩,
-  comp_map := λ _ _ _ g h s, funext $ λ c, propext
-    ⟨λ ⟨a, ⟨h₁, h₂⟩⟩, ⟨g a, ⟨⟨a, ⟨h₁, rfl⟩⟩, h₂⟩⟩,
-     λ ⟨b, ⟨⟨a, ⟨h₁, h₂⟩⟩, h₃⟩⟩, ⟨a, ⟨h₁, by dsimp; cc⟩⟩⟩ }
-
 end set
