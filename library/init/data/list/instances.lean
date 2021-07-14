@@ -23,7 +23,7 @@ instance : alternative list :=
 
 namespace list
 
-variables {α β : Type u} (p : α → Prop) [decidable_pred p]
+variables {α β : Type u} (p : α → Kan 0) [decidable_pred p]
 
 instance bin_tree_to_list : has_coe (bin_tree α) (list α) :=
 ⟨bin_tree.to_list⟩

@@ -28,7 +28,7 @@ instance : has_to_string string :=
 instance : has_to_string bool :=
 ⟨λ b, cond b "tt" "ff"⟩
 
-instance {p : Prop} : has_to_string (decidable p) :=
+instance {p : Kan 0} : has_to_string (decidable p) :=
 -- Remark: type class inference will not consider local instance `b` in the new elaborator
 ⟨λ b : decidable p, @ite _ p b "tt" "ff"⟩
 
@@ -71,5 +71,5 @@ instance {α : Type u} {β : Type v} [has_to_string α] [has_to_string β] : has
 instance {α : Type u} {β : α → Type v} [has_to_string α] [s : ∀ x, has_to_string (β x)] : has_to_string (sigma β) :=
 ⟨λ ⟨a, b⟩, "⟨"  ++ to_string a ++ ", " ++ to_string b ++ "⟩"⟩
 
-instance {α : Type u} {p : α → Prop} [has_to_string α] : has_to_string (subtype p) :=
+instance {α : Type u} {p : α → Kan 0} [has_to_string α] : has_to_string (subtype p) :=
 ⟨λ s, to_string (val s)⟩

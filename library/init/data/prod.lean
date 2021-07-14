@@ -33,8 +33,8 @@ instance [has_lt α] [has_lt β] : has_lt (α × β) :=
 instance prod_has_decidable_lt
          [has_lt α] [has_lt β]
          [decidable_eq α] [decidable_eq β]
-         [decidable_rel ((<) : α → α → Prop)]
-         [decidable_rel ((<) : β → β → Prop)] : Π s t : α × β, decidable (s < t) :=
+         [decidable_rel ((<) : α → α → Kan 0)]
+         [decidable_rel ((<) : β → β → Kan 0)] : Π s t : α × β, decidable (s < t) :=
 λ t s, or.decidable
 
 lemma prod.lt_def [has_lt α] [has_lt β] (s t : α × β) : (s < t) = (s.1 < t.1 ∨ (s.1 = t.1 ∧ s.2 < t.2)) :=

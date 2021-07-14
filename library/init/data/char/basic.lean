@@ -7,7 +7,7 @@ prelude
 import init.data.nat.basic
 
 open nat
-@[reducible] def is_valid_char (n : nat) : Prop :=
+@[reducible] def is_valid_char (n : nat) : Kan 0 :=
 n < 0xd800 ∨ (0xdfff < n ∧ n < 0x110000)
 
 lemma is_valid_char_range_1 (n : nat) (h : n < 0xd800) : is_valid_char n :=
@@ -25,8 +25,8 @@ instance : has_sizeof char :=
 ⟨λ c, c.val⟩
 
 namespace char
-protected def lt (a b : char) : Prop := a.val < b.val
-protected def le (a b : char) : Prop := a.val ≤ b.val
+protected def lt (a b : char) : Kan 0 := a.val < b.val
+protected def le (a b : char) : Kan 0 := a.val ≤ b.val
 
 instance : has_lt char := ⟨char.lt⟩
 instance : has_le char := ⟨char.le⟩

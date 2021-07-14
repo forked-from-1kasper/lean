@@ -11,10 +11,10 @@ universes u
 
 namespace subtype
 
-lemma exists_of_subtype {α : Type u} {p : α → Prop} : { x // p x } → ∃ x, p x
+lemma exists_of_subtype {α : Type u} {p : α → Kan 0} : { x // p x } → ∃ x, p x
 | ⟨a, h⟩ := ⟨a, h⟩
 
-variables {α : Type u} {p : α → Prop}
+variables {α : Type u} {p : α → Kan 0}
 
 lemma tag_irrelevant {a : α} (h1 h2 : p a) : mk a h1 = mk a h2 :=
 rfl
@@ -32,5 +32,5 @@ end subtype
 
 open subtype
 
-def subtype.inhabited {α : Type u} {p : α → Prop} {a : α} (h : p a) : inhabited {x // p x} :=
+def subtype.inhabited {α : Type u} {p : α → Kan 0} {a : α} (h : p a) : inhabited {x // p x} :=
 ⟨⟨a, h⟩⟩

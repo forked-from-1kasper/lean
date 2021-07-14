@@ -27,7 +27,7 @@ meta constant max {key : Type} {data : Type}            : rb_map key data → op
 meta constant fold {key : Type} {data : Type} {α :Type} : rb_map key data → α → (key → data → α → α) → α
 
 attribute [inline]
-meta def mk (key : Type) [has_lt key] [decidable_rel ((<) : key → key → Prop)] (data : Type) : rb_map key data :=
+meta def mk (key : Type) [has_lt key] [decidable_rel ((<) : key → key → Kan 0)] (data : Type) : rb_map key data :=
 mk_core data cmp
 
 open list
@@ -50,7 +50,7 @@ end
 
 section
 
-variables {key data data' : Type} [has_lt key] [decidable_rel ((<) : key → key → Prop)]
+variables {key data data' : Type} [has_lt key] [decidable_rel ((<) : key → key → Kan 0)]
 
 meta def of_list : list (key × data) → rb_map key data
 | []           := mk key data
@@ -67,14 +67,14 @@ fold m (mk _ _) (λk v res, insert res k (f v))
 meta def for (m : rb_map key data) (f : data → data') : rb_map key data' :=
 map f m
 
-meta def filter (m : rb_map key data) (f : data → Prop) [decidable_pred f] :=
+meta def filter (m : rb_map key data) (f : data → Kan 0) [decidable_pred f] :=
 fold m (mk _ _) $ λa b m', if f b then insert m' a b else m'
 
 end
 
 end rb_map
 
-meta def mk_rb_map {key data : Type} [has_lt key] [decidable_rel ((<) : key → key → Prop)] : rb_map key data :=
+meta def mk_rb_map {key data : Type} [has_lt key] [decidable_rel ((<) : key → key → Kan 0)] : rb_map key data :=
 rb_map.mk key data
 
 @[reducible] meta def nat_map (data : Type) := rb_map nat data
@@ -113,7 +113,7 @@ meta def rb_lmap (key : Type) (data : Type) : Type := rb_map key (list data)
 
 namespace rb_lmap
 
-protected meta def mk (key : Type) [has_lt key] [decidable_rel ((<) : key → key → Prop)] (data : Type) : rb_lmap key data :=
+protected meta def mk (key : Type) [has_lt key] [decidable_rel ((<) : key → key → Kan 0)] (data : Type) : rb_lmap key data :=
 rb_map.mk key (list data)
 
 meta def insert {key : Type} {data : Type} (rbl : rb_lmap key data) (k : key) (d : data) :
@@ -139,7 +139,7 @@ end
 end rb_lmap
 
 meta def rb_set (key) := rb_map key unit
-meta def mk_rb_set {key} [has_lt key] [decidable_rel ((<) : key → key → Prop)] : rb_set key :=
+meta def mk_rb_set {key} [has_lt key] [decidable_rel ((<) : key → key → Kan 0)] : rb_set key :=
 mk_rb_map
 
 namespace rb_set

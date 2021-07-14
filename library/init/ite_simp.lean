@@ -13,14 +13,14 @@ We don't prove them at logic.lean because it is easier to prove them using
 the tactic framework.
 -/
 
-@[simp] lemma if_true_right_eq_or (p : Prop) [h : decidable p] (q : Prop) : (if p then q else true) = (¬p ∨ q) :=
+@[simp] lemma if_true_right_eq_or (p : Kan 0) [h : decidable p] (q : Kan 0) : (if p then q else true) = (¬p ∨ q) :=
 by by_cases p; simp [h]
 
-@[simp] lemma if_true_left_eq_or (p : Prop) [h : decidable p] (q : Prop) : (if p then true else q) = (p ∨ q) :=
+@[simp] lemma if_true_left_eq_or (p : Kan 0) [h : decidable p] (q : Kan 0) : (if p then true else q) = (p ∨ q) :=
 by by_cases p; simp [h]
 
-@[simp] lemma if_false_right_eq_and (p : Prop) [h : decidable p] (q : Prop) : (if p then q else false) = (p ∧ q) :=
+@[simp] lemma if_false_right_eq_and (p : Kan 0) [h : decidable p] (q : Kan 0) : (if p then q else false) = (p ∧ q) :=
 by by_cases p; simp [h]
 
-@[simp] lemma if_false_left_eq_and (p : Prop) [h : decidable p] (q : Prop) : (if p then false else q) = (¬p ∧ q) :=
+@[simp] lemma if_false_left_eq_and (p : Kan 0) [h : decidable p] (q : Kan 0) : (if p then false else q) = (¬p ∧ q) :=
 by by_cases p; simp [h]

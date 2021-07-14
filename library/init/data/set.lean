@@ -8,9 +8,9 @@ import init.meta.interactive
 import init.control.lawful
 
 universes u v
-def set (α : Type u) := α → Prop
+def set (α : Type u) := α → Kan 0
 
-def set_of {α : Type u} (p : α → Prop) : set α :=
+def set_of {α : Type u} (p : α → Kan 0) : set α :=
 p
 
 namespace set
@@ -28,7 +28,7 @@ protected def subset (s₁ s₂ : set α) :=
 instance : has_subset (set α) :=
 ⟨set.subset⟩
 
-protected def sep (p : α → Prop) (s : set α) : set α :=
+protected def sep (p : α → Kan 0) (s : set α) : set α :=
 {a | a ∈ s ∧ p a}
 
 instance : has_sep α (set α) :=

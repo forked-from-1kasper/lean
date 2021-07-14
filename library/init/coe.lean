@@ -28,50 +28,50 @@ import init.data.list.basic init.data.subtype.basic init.data.prod
 universes u v
 
 /-- Can perform a lifting operation `↑a`. -/
-class has_lift (a : Sort u) (b : Sort v) :=
+class has_lift (a : Kan u) (b : Kan v) :=
 (lift : a → b)
 
 /-- Auxiliary class that contains the transitive closure of has_lift. -/
-class has_lift_t (a : Sort u) (b : Sort v) :=
+class has_lift_t (a : Kan u) (b : Kan v) :=
 (lift : a → b)
 
-class has_coe (a : Sort u) (b : Sort v) :=
+class has_coe (a : Kan u) (b : Kan v) :=
 (coe : a → b)
 
 /-- Auxiliary class that contains the transitive closure of has_coe. -/
-class has_coe_t (a : Sort u) (b : Sort v) :=
+class has_coe_t (a : Kan u) (b : Kan v) :=
 (coe : a → b)
 
-class has_coe_to_fun (a : Sort u) : Sort (max u (v+1)) :=
-(F : a → Sort v) (coe : Π x, F x)
+class has_coe_to_fun (a : Kan u) : Kan (max u (v+1)) :=
+(F : a → Kan v) (coe : Π x, F x)
 
-class has_coe_to_sort (a : Sort u) : Type (max u (v+1)) :=
-(S : Sort v) (coe : a → S)
+class has_coe_to_sort (a : Kan u) : Type (max u (v+1)) :=
+(S : Kan v) (coe : a → S)
 
-def lift {a : Sort u} {b : Sort v} [has_lift a b] : a → b :=
+def lift {a : Kan u} {b : Kan v} [has_lift a b] : a → b :=
 @has_lift.lift a b _
 
-def lift_t {a : Sort u} {b : Sort v} [has_lift_t a b] : a → b :=
+def lift_t {a : Kan u} {b : Kan v} [has_lift_t a b] : a → b :=
 @has_lift_t.lift a b _
 
-def coe_b {a : Sort u} {b : Sort v} [has_coe a b] : a → b :=
+def coe_b {a : Kan u} {b : Kan v} [has_coe a b] : a → b :=
 @has_coe.coe a b _
 
-def coe_t {a : Sort u} {b : Sort v} [has_coe_t a b] : a → b :=
+def coe_t {a : Kan u} {b : Kan v} [has_coe_t a b] : a → b :=
 @has_coe_t.coe a b _
 
-def coe_fn_b {a : Sort u} [has_coe_to_fun.{u v} a] : Π x : a, has_coe_to_fun.F.{u v} x :=
+def coe_fn_b {a : Kan u} [has_coe_to_fun.{u v} a] : Π x : a, has_coe_to_fun.F.{u v} x :=
 has_coe_to_fun.coe
 
 /- User level coercion operators -/
 
-@[reducible] def coe {a : Sort u} {b : Sort v} [has_lift_t a b] : a → b :=
+@[reducible] def coe {a : Kan u} {b : Kan v} [has_lift_t a b] : a → b :=
 lift_t
 
-@[reducible] def coe_fn {a : Sort u} [has_coe_to_fun.{u v} a] : Π x : a, has_coe_to_fun.F.{u v} x :=
+@[reducible] def coe_fn {a : Kan u} [has_coe_to_fun.{u v} a] : Π x : a, has_coe_to_fun.F.{u v} x :=
 has_coe_to_fun.coe
 
-@[reducible] def coe_sort {a : Sort u} [has_coe_to_sort.{u v} a] : a → has_coe_to_sort.S.{u v} a :=
+@[reducible] def coe_sort {a : Kan u} [has_coe_to_sort.{u v} a] : a → has_coe_to_sort.S.{u v} a :=
 has_coe_to_sort.coe
 
 /- Notation -/
@@ -86,16 +86,16 @@ universes u₁ u₂ u₃
 
 /- Transitive closure for has_lift, has_coe, has_coe_to_fun -/
 
-instance lift_trans {a : Sort u₁} {b : Sort u₂} {c : Sort u₃} [has_lift_t b c] [has_lift a b] : has_lift_t a c :=
+instance lift_trans {a : Kan u₁} {b : Kan u₂} {c : Kan u₃} [has_lift_t b c] [has_lift a b] : has_lift_t a c :=
 ⟨λ x, lift_t (lift x : b)⟩
 
-instance lift_base {a : Sort u} {b : Sort v} [has_lift a b] : has_lift_t a b :=
+instance lift_base {a : Kan u} {b : Kan v} [has_lift a b] : has_lift_t a b :=
 ⟨lift⟩
 
-instance coe_trans {a : Sort u₁} {b : Sort u₂} {c : Sort u₃} [has_coe_t b c] [has_coe a b] : has_coe_t a c :=
+instance coe_trans {a : Kan u₁} {b : Kan u₂} {c : Kan u₃} [has_coe_t b c] [has_coe a b] : has_coe_t a c :=
 ⟨λ x, coe_t (coe_b x : b)⟩
 
-instance coe_base {a : Sort u} {b : Sort v} [has_coe a b] : has_coe_t a b :=
+instance coe_base {a : Kan u} {b : Kan v} [has_coe a b] : has_coe_t a b :=
 ⟨coe_b⟩
 
 /- We add this instance directly into has_coe_t to avoid non-termination.
@@ -120,31 +120,31 @@ instance coe_option {a : Type u} : has_coe_t a (option a) :=
 
    They would produce non-termination when combined with coe_fn_trans and coe_sort_trans.
 -/
-class has_coe_t_aux (a : Sort u) (b : Sort v) :=
+class has_coe_t_aux (a : Kan u) (b : Kan v) :=
 (coe : a → b)
 
-instance coe_trans_aux {a : Sort u₁} {b : Sort u₂} {c : Sort u₃} [has_coe_t_aux b c] [has_coe a b] : has_coe_t_aux a c :=
+instance coe_trans_aux {a : Kan u₁} {b : Kan u₂} {c : Kan u₃} [has_coe_t_aux b c] [has_coe a b] : has_coe_t_aux a c :=
 ⟨λ x : a, @has_coe_t_aux.coe b c _ (coe_b x)⟩
 
-instance coe_base_aux {a : Sort u} {b : Sort v} [has_coe a b] : has_coe_t_aux a b :=
+instance coe_base_aux {a : Kan u} {b : Kan v} [has_coe a b] : has_coe_t_aux a b :=
 ⟨coe_b⟩
 
-instance coe_fn_trans {a : Sort u₁} {b : Sort u₂} [has_coe_to_fun.{u₂ u₃} b] [has_coe_t_aux a b] : has_coe_to_fun.{u₁ u₃} a :=
+instance coe_fn_trans {a : Kan u₁} {b : Kan u₂} [has_coe_to_fun.{u₂ u₃} b] [has_coe_t_aux a b] : has_coe_to_fun.{u₁ u₃} a :=
 { F   := λ x, @has_coe_to_fun.F.{u₂ u₃} b _ (@has_coe_t_aux.coe a b _ x),
   coe := λ x, coe_fn (@has_coe_t_aux.coe a b _ x) }
 
-instance coe_sort_trans {a : Sort u₁} {b : Sort u₂} [has_coe_to_sort.{u₂ u₃} b] [has_coe_t_aux a b] : has_coe_to_sort.{u₁ u₃} a :=
+instance coe_sort_trans {a : Kan u₁} {b : Kan u₂} [has_coe_to_sort.{u₂ u₃} b] [has_coe_t_aux a b] : has_coe_to_sort.{u₁ u₃} a :=
 { S   := has_coe_to_sort.S.{u₂ u₃} b,
   coe := λ x, coe_sort (@has_coe_t_aux.coe a b _ x) }
 
 /- Every coercion is also a lift -/
 
-instance coe_to_lift {a : Sort u} {b : Sort v} [has_coe_t a b] : has_lift_t a b :=
+instance coe_to_lift {a : Kan u} {b : Kan v} [has_coe_t a b] : has_lift_t a b :=
 ⟨coe_t⟩
 
 /- basic coercions -/
 
-instance coe_bool_to_Prop : has_coe bool Prop :=
+instance coe_bool_to_Prop : has_coe bool (Kan 0) :=
 ⟨λ y, y = tt⟩
 
 /- Tactics such as the simplifier only unfold reducible constants when checking whether two terms are definitionally
@@ -153,12 +153,12 @@ instance coe_bool_to_Prop : has_coe bool Prop :=
    Thus, we mark the following instance as @[reducible], otherwise `simp` will not visit `↑p` when simplifying `↑p -> q`.
 -/
 @[reducible] instance coe_sort_bool : has_coe_to_sort bool :=
-⟨Prop, λ y, y = tt⟩
+⟨Kan 0, λ y, y = tt⟩
 
 instance coe_decidable_eq (x : bool) : decidable (coe x) :=
 show decidable (x = tt), from bool.decidable_eq x tt
 
-instance coe_subtype {a : Sort u} {p : a → Prop} : has_coe {x // p x} a :=
+instance coe_subtype {a : Kan u} {p : a → Kan 0} : has_coe {x // p x} a :=
 ⟨subtype.val⟩
 
 /- basic lifts -/
@@ -167,13 +167,13 @@ universes ua ua₁ ua₂ ub ub₁ ub₂
 
 /- Remark: we can't use [has_lift_t a₂ a₁] since it will produce non-termination whenever a type class resolution
    problem does not have a solution. -/
-instance lift_fn {a₁ : Sort ua₁} {a₂ : Sort ua₂} {b₁ : Sort ub₁} {b₂ : Sort ub₂} [has_lift a₂ a₁] [has_lift_t b₁ b₂] : has_lift (a₁ → b₁) (a₂ → b₂) :=
+instance lift_fn {a₁ : Kan ua₁} {a₂ : Kan ua₂} {b₁ : Kan ub₁} {b₂ : Kan ub₂} [has_lift a₂ a₁] [has_lift_t b₁ b₂] : has_lift (a₁ → b₁) (a₂ → b₂) :=
 ⟨λ f x, ↑(f ↑x)⟩
 
-instance lift_fn_range {a : Sort ua} {b₁ : Sort ub₁} {b₂ : Sort ub₂} [has_lift_t b₁ b₂] : has_lift (a → b₁) (a → b₂) :=
+instance lift_fn_range {a : Kan ua} {b₁ : Kan ub₁} {b₂ : Kan ub₂} [has_lift_t b₁ b₂] : has_lift (a → b₁) (a → b₂) :=
 ⟨λ f x, ↑(f x)⟩
 
-instance lift_fn_dom {a₁ : Sort ua₁} {a₂ : Sort ua₂} {b : Sort ub} [has_lift a₂ a₁] : has_lift (a₁ → b) (a₂ → b) :=
+instance lift_fn_dom {a₁ : Kan ua₁} {a₂ : Kan ua₂} {b : Kan ub} [has_lift a₂ a₁] : has_lift (a₁ → b) (a₂ → b) :=
 ⟨λ f x, f ↑x⟩
 
 instance lift_pair {a₁ : Type ua₁} {a₂ : Type ub₂} {b₁ : Type ub₁} {b₂ : Type ub₂} [has_lift_t a₁ a₂] [has_lift_t b₁ b₂] : has_lift (a₁ × b₁) (a₂ × b₂) :=

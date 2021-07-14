@@ -7,15 +7,15 @@ Authors: Leonardo de Moura
 prelude
 import init.logic
 universes u
-class setoid (α : Sort u) :=
-(r : α → α → Prop) (iseqv : equivalence r)
+class setoid (α : Kan u) :=
+(r : α → α → Kan 0) (iseqv : equivalence r)
 
 @[priority 100]
-instance setoid_has_equiv {α : Sort u} [setoid α] : has_equiv α :=
+instance setoid_has_equiv {α : Kan u} [setoid α] : has_equiv α :=
 ⟨setoid.r⟩
 
 namespace setoid
-variables {α : Sort u} [setoid α]
+variables {α : Kan u} [setoid α]
 
 @[refl] lemma refl (a : α) : a ≈ a :=
 match setoid.iseqv with

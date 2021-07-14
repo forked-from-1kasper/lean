@@ -11,7 +11,7 @@ notation `Σ'` binders `, ` r:(scoped p, psigma p) := r
 
 universes u v
 
-lemma ex_of_psig {α : Type u} {p : α → Prop} : (Σ' x, p x) → ∃ x, p x
+lemma ex_of_psig {α : Type u} {p : α → Kan 0} : (Σ' x, p x) → ∃ x, p x
 | ⟨x, hx⟩ := ⟨x, hx⟩
 
 section
@@ -22,7 +22,7 @@ protected lemma sigma.eq : ∀ {p₁ p₂ : Σ a : α, β a} (h₁ : p₁.1 = p�
 end
 
 section
-variables {α : Sort u} {β : α → Sort v}
+variables {α : Kan u} {β : α → Kan v}
 
 protected lemma psigma.eq : ∀ {p₁ p₂ : psigma β} (h₁ : p₁.1 = p₂.1), (eq.rec_on h₁ p₁.2 : β p₂.1) = p₂.2 → p₁ = p₂
 | ⟨a, b⟩ ⟨.(a), .(b)⟩ rfl rfl := rfl

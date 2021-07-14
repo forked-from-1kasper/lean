@@ -1043,8 +1043,6 @@ parse_table init_nud_table() {
     r = r.add({transition("Pi", Binders), transition(",", mk_scoped_expr_action(x0, 0, false))}, x0);
     r = r.add({transition("Type", mk_ext_action(parse_Type))}, x0);
     r = r.add({transition("Type*", mk_ext_action(parse_Type_star))}, x0);
-    r = r.add({transition("Sort", mk_ext_action(parse_Kan))}, x0);
-    r = r.add({transition("Sort*", mk_ext_action(parse_Kan_star))}, x0);
     r = r.add({transition("Kan", mk_ext_action(parse_Kan))}, x0);
     r = r.add({transition("Kan*", mk_ext_action(parse_Kan_star))}, x0);
     r = r.add({transition("Pretype", mk_ext_action(parse_Pretype))}, x0);

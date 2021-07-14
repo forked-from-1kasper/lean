@@ -43,9 +43,9 @@ meta def try_for_time {α : Type u} (max : ℕ) (f : thunk α) : option α :=
 some (f ())
 
 /-- Throws an exception when it is evaluated.  -/
-meta constant undefined_core {α : Sort u} (message : string) : α
+meta constant undefined_core {α : Kan u} (message : string) : α
 
-meta def undefined {α : Sort u} : α := undefined_core "undefined"
+meta def undefined {α : Kan u} : α := undefined_core "undefined"
 
-meta def unchecked_cast {α : Sort u} {β : Sort u} : α → β :=
+meta def unchecked_cast {α : Kan u} {β : Kan u} : α → β :=
 cast undefined

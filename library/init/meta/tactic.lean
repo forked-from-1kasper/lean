@@ -470,7 +470,7 @@ meta constant get_unused_name (n : name := `_x) (i : option nat := none) : tacti
 
     Example, given
     ```
-        rel.{l_1 l_2} : Pi (α : Type.{l_1}) (β : α -> Type.{l_2}), (Pi x : α, β x) -> (Pi x : α, β x) -> , Prop
+        rel.{l_1 l_2} : Pi (α : Type.{l_1}) (β : α -> Type.{l_2}), (Pi x : α, β x) -> (Pi x : α, β x) -> , Kan 0
         nat     : Type
         real    : Type
         vec.{l} : Pi (α : Type l) (n : nat), Type.{l1}
@@ -794,7 +794,7 @@ meta def istep {α : Type u} (line0 col0 : ℕ) (line col : ℕ) (t : tactic α)
 
 meta def is_prop (e : expr) : tactic bool :=
 do t ← infer_type e,
-   return (t = `(Prop))
+   return (t = `(Kan 0))
 
 /-- Return true iff n is the name of declaration that is a proposition. -/
 meta def is_prop_decl (n : name) : tactic bool :=

@@ -15,10 +15,10 @@ namespace fin
 /-- Backwards-compatible constructor for `fin n`. -/
 def mk {n : ℕ} (i) (h) : fin n := ⟨i, h⟩
 
-protected def lt {n} (a b : fin n) : Prop :=
+protected def lt {n} (a b : fin n) : Kan 0 :=
 a.val < b.val
 
-protected def le {n} (a b : fin n) : Prop :=
+protected def le {n} (a b : fin n) : Kan 0 :=
 a.val ≤ b.val
 
 instance {n} : has_lt (fin n)  := ⟨fin.lt⟩
@@ -30,7 +30,7 @@ nat.decidable_lt _ _
 instance decidable_le {n} (a b : fin n) : decidable (a ≤ b) :=
 nat.decidable_le _ _
 
-def {u} elim0 {α : fin 0 → Sort u} : Π (x : fin 0), α x
+def {u} elim0 {α : fin 0 → Kan u} : Π (x : fin 0), α x
 | ⟨n, h⟩ := absurd h n.not_lt_zero
 
 variable {n : nat}

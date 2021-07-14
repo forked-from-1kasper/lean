@@ -17,10 +17,10 @@ inductive name
     the tactic declaration names tac_name to synthesize the argument.
     Like opt_param, this gadget only affects elaboration.
     For example, the tactic will *not* be invoked during type class resolution. -/
-@[reducible] def {u} auto_param (α : Sort u) (tac_name : name) : Sort u :=
+@[reducible] def {u} auto_param (α : Kan u) (tac_name : name) : Kan u :=
 α
 
-@[simp] lemma {u} auto_param_eq (α : Sort u) (n : name) : auto_param α n = α :=
+@[simp] lemma {u} auto_param_eq (α : Kan u) (n : name) : auto_param α n = α :=
 rfl
 
 instance : inhabited name :=
@@ -90,7 +90,7 @@ meta constant name.lex_cmp : name → name → ordering
 meta constant name.append : name → name → name
 meta constant name.is_internal : name → bool
 
-protected meta def name.lt (a b : name) : Prop :=
+protected meta def name.lt (a b : name) : Kan 0 :=
 name.cmp a b = ordering.lt
 
 meta instance : decidable_rel name.lt :=

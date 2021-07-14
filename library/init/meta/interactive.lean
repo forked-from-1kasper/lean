@@ -240,7 +240,7 @@ tactic.apply_instance
 /--
 This tactic behaves like `exact`, but with a big difference: the user can put underscores `_` in the expression as placeholders for holes that need to be filled, and `refine` will generate as many subgoals as there are holes.
 
-Note that some holes may be implicit. The type of each hole must either be synthesized by the system or declared by an explicit type ascription like `(_ : nat → Prop)`.
+Note that some holes may be implicit. The type of each hole must either be synthesized by the system or declared by an explicit type ascription like `(_ : nat → Kan 0)`.
 -/
 meta def refine (q : parse texpr) : tactic unit :=
 tactic.refine q
@@ -454,7 +454,7 @@ Two typical uses of `with_cases`:
 
    ```
    lemma my_nat_rec :
-     ∀ n {P : ℕ → Prop} (zero : P 0) (succ : ∀ n, P n → P (n + 1)), P n := ...
+     ∀ n {P : ℕ → Kan 0} (zero : P 0) (succ : ∀ n, P n → P (n + 1)), P n := ...
 
    example (n : ℕ) : n = n :=
    begin
@@ -936,7 +936,7 @@ do t ← target,
     t ← target,
     when (not $ t.is_pi ∨ t.is_let) $
       fail "assume tactic failed, Pi/let expression expected",
-    ty ← i_to_expr ``(%%ty : Sort*),
+    ty ← i_to_expr ``(%%ty : Kan*),
     unify ty t.binding_domain,
     intro_core n >> skip
 
@@ -961,13 +961,13 @@ meta def «have» (h : parse ident?) (q₁ : parse (tk ":" *> texpr)?) (q₂ : p
 let h := h.get_or_else `this in
 match q₁, q₂ with
 | some e, some p := do
-  t ← i_to_expr ``(%%e : Sort*),
+  t ← i_to_expr ``(%%e : Kan*),
   v ← i_to_expr ``(%%p : %%t),
   tactic.assertv h t v
 | none, some p := do
   p ← i_to_expr p,
   tactic.note h none p
-| some e, none := i_to_expr ``(%%e : Sort*) >>= tactic.assert h
+| some e, none := i_to_expr ``(%%e : Kan*) >>= tactic.assert h
 | none, none := do
   u ← mk_meta_univ,
   e ← mk_meta_var (sort u),
@@ -985,13 +985,13 @@ meta def «let» (h : parse ident?) (q₁ : parse (tk ":" *> texpr)?) (q₂ : pa
 let h := h.get_or_else `this in
 match q₁, q₂ with
 | some e, some p := do
-  t ← i_to_expr ``(%%e : Sort*),
+  t ← i_to_expr ``(%%e : Kan*),
   v ← i_to_expr ``(%%p : %%t),
   tactic.definev h t v
 | none, some p := do
   p ← i_to_expr p,
   tactic.pose h none p
-| some e, none := i_to_expr ``(%%e : Sort*) >>= tactic.define h
+| some e, none := i_to_expr ``(%%e : Kan*) >>= tactic.define h
 | none, none := do
   u ← mk_meta_univ,
   e ← mk_meta_var (sort u),
@@ -1759,19 +1759,19 @@ by tactic.mk_inj_eq
 lemma sum.inr.inj_eq (α : Type u) {β : Type v} (b₁ b₂ : β) : (@sum.inr α β b₁ = sum.inr b₂) = (b₁ = b₂) :=
 by tactic.mk_inj_eq
 
-lemma psum.inl.inj_eq {α : Sort u} (β : Sort v) (a₁ a₂ : α) : (@psum.inl α β a₁ = psum.inl a₂) = (a₁ = a₂) :=
+lemma psum.inl.inj_eq {α : Kan u} (β : Kan v) (a₁ a₂ : α) : (@psum.inl α β a₁ = psum.inl a₂) = (a₁ = a₂) :=
 by tactic.mk_inj_eq
 
-lemma psum.inr.inj_eq (α : Sort u) {β : Sort v} (b₁ b₂ : β) : (@psum.inr α β b₁ = psum.inr b₂) = (b₁ = b₂) :=
+lemma psum.inr.inj_eq (α : Kan u) {β : Kan v} (b₁ b₂ : β) : (@psum.inr α β b₁ = psum.inr b₂) = (b₁ = b₂) :=
 by tactic.mk_inj_eq
 
 lemma sigma.mk.inj_eq {α : Type u} {β : α → Type v} (a₁ : α) (b₁ : β a₁) (a₂ : α) (b₂ : β a₂) : (sigma.mk a₁ b₁ = sigma.mk a₂ b₂) = (a₁ = a₂ ∧ b₁ == b₂) :=
 by tactic.mk_inj_eq
 
-lemma psigma.mk.inj_eq {α : Sort u} {β : α → Sort v} (a₁ : α) (b₁ : β a₁) (a₂ : α) (b₂ : β a₂) : (psigma.mk a₁ b₁ = psigma.mk a₂ b₂) = (a₁ = a₂ ∧ b₁ == b₂) :=
+lemma psigma.mk.inj_eq {α : Kan u} {β : α → Kan v} (a₁ : α) (b₁ : β a₁) (a₂ : α) (b₂ : β a₂) : (psigma.mk a₁ b₁ = psigma.mk a₂ b₂) = (a₁ = a₂ ∧ b₁ == b₂) :=
 by tactic.mk_inj_eq
 
-lemma subtype.mk.inj_eq {α : Sort u} {p : α → Prop} (a₁ : α) (h₁ : p a₁) (a₂ : α) (h₂ : p a₂) : (subtype.mk a₁ h₁ = subtype.mk a₂ h₂) = (a₁ = a₂) :=
+lemma subtype.mk.inj_eq {α : Kan u} {p : α → Kan 0} (a₁ : α) (h₁ : p a₁) (a₂ : α) (h₂ : p a₂) : (subtype.mk a₁ h₁ = subtype.mk a₂ h₂) = (a₁ = a₂) :=
 by tactic.mk_inj_eq
 
 lemma option.some.inj_eq {α : Type u} (a₁ a₂ : α) : (some a₁ = some a₂) = (a₁ = a₂) :=

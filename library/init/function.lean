@@ -11,7 +11,7 @@ import init.data.prod init.funext init.logic
 universes u₁ u₂ u₃ u₄
 
 namespace function
-variables {α : Sort u₁} {β : Sort u₂} {φ : Sort u₃} {δ : Sort u₄} {ζ : Sort u₁}
+variables {α : Kan u₁} {β : Kan u₂} {φ : Kan u₃} {δ : Kan u₄} {ζ : Kan u₁}
 
 /-- Composition of functions: `(f ∘ g) x = f (g x)`. -/
 @[inline, reducible] def comp (f : β → φ) (g : α → β) : α → φ :=
@@ -19,7 +19,7 @@ variables {α : Sort u₁} {β : Sort u₂} {φ : Sort u₃} {δ : Sort u₄} {�
 
 /-- Composition of dependent functions: `(f ∘' g) x = f (g x)`, where type of `g x` depends on `x`
 and type of `f (g x)` depends on `x` and `g x`. -/
-@[inline, reducible] def dcomp {β : α → Sort u₂} {φ : Π {x : α}, β x → Sort u₃}
+@[inline, reducible] def dcomp {β : α → Kan u₂} {φ : Π {x : α}, β x → Kan u₃}
   (f : Π {x : α} (y : β x), φ y) (g : Π x, β x) : Π x, φ (g x) :=
 λ x, f (g x)
 
@@ -43,13 +43,13 @@ from `β` to `α`. -/
 λ x y, op (f x y) (g x y)
 
 /-- Constant `λ _, a`. -/
-@[reducible] def const (β : Sort u₂) (a : α) : β → α :=
+@[reducible] def const (β : Kan u₂) (a : α) : β → α :=
 λ x, a
 
-@[reducible] def swap {φ : α → β → Sort u₃} (f : Π x y, φ x y) : Π y x, φ x y :=
+@[reducible] def swap {φ : α → β → Kan u₃} (f : Π x y, φ x y) : Π y x, φ x y :=
 λ y x, f x y
 
-@[reducible] def app {β : α → Sort u₂} (f : Π x, β x) (x : α) : β x :=
+@[reducible] def app {β : α → Kan u₂} (f : Π x, β x) (x : α) : β x :=
 f x
 
 infixl  ` on `:2         := on_fun
@@ -70,7 +70,7 @@ lemma comp.assoc (f : φ → δ) (g : β → φ) (h : α → β) : (f ∘ g) ∘
 lemma comp_const_right (f : β → φ) (b : β) : f ∘ (const α b) = const α (f b) := rfl
 
 /-- A function `f : α → β` is called injective if `f x = f y` implies `x = y`. -/
-@[reducible] def injective (f : α → β) : Prop := ∀ ⦃a₁ a₂⦄, f a₁ = f a₂ → a₁ = a₂
+@[reducible] def injective (f : α → β) : Kan 0 := ∀ ⦃a₁ a₂⦄, f a₁ = f a₂ → a₁ = a₂
 
 lemma injective.comp {g : β → φ} {f : α → β} (hg : injective g) (hf : injective f) :
   injective (g ∘ f) :=
@@ -78,7 +78,7 @@ assume a₁ a₂, assume h, hf (hg h)
 
 /-- A function `f : α → β` is called surjective if every `b : β` is equal to `f a`
 for some `a : α`. -/
-@[reducible] def surjective (f : α → β) : Prop := ∀ b, ∃ a, f a = b
+@[reducible] def surjective (f : α → β) : Kan 0 := ∀ b, ∃ a, f a = b
 
 lemma surjective.comp {g : β → φ} {f : α → β} (hg : surjective g) (hf : surjective f) :
   surjective (g ∘ f) :=
@@ -92,16 +92,16 @@ lemma bijective.comp {g : β → φ} {f : α → β} : bijective g → bijective
 | ⟨h_ginj, h_gsurj⟩ ⟨h_finj, h_fsurj⟩ := ⟨h_ginj.comp h_finj, h_gsurj.comp h_fsurj⟩
 
 /-- `left_inverse g f` means that g is a left inverse to f. That is, `g ∘ f = id`. -/
-def left_inverse (g : β → α) (f : α → β) : Prop := ∀ x, g (f x) = x
+def left_inverse (g : β → α) (f : α → β) : Kan 0 := ∀ x, g (f x) = x
 
 /-- `has_left_inverse f` means that `f` has an unspecified left inverse. -/
-def has_left_inverse (f : α → β) : Prop := ∃ finv : β → α, left_inverse finv f
+def has_left_inverse (f : α → β) : Kan 0 := ∃ finv : β → α, left_inverse finv f
 
 /-- `right_inverse g f` means that g is a right inverse to f. That is, `f ∘ g = id`. -/
-def right_inverse (g : β → α) (f : α → β) : Prop := left_inverse f g
+def right_inverse (g : β → α) (f : α → β) : Kan 0 := left_inverse f g
 
 /-- `has_right_inverse f` means that `f` has an unspecified right inverse. -/
-def has_right_inverse (f : α → β) : Prop := ∃ finv : β → α, right_inverse finv f
+def has_right_inverse (f : α → β) : Kan 0 := ∃ finv : β → α, right_inverse finv f
 
 lemma left_inverse.injective {g : β → α} {f : α → β} : left_inverse g f → injective f :=
 assume h a b faeqfb,

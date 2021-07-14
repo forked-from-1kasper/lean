@@ -13,35 +13,35 @@ universes u v
 
 -- iff can now be used to do substitutions in a calculation
 attribute [subst]
-lemma iff_subst {a b : Prop} {p : Prop → Prop} (h₁ : a ↔ b) (h₂ : p a) : p b :=
+lemma iff_subst {a b : Kan 0} {p : Kan 0 → Kan 0} (h₁ : a ↔ b) (h₂ : p a) : p b :=
 eq.subst (propext h₁) h₂
 
 namespace quot
-constant sound : Π {α : Sort u} {r : α → α → Prop} {a b : α}, r a b → quot.mk r a = quot.mk r b
+constant sound : Π {α : Kan u} {r : α → α → Kan 0} {a b : α}, r a b → quot.mk r a = quot.mk r b
 
 attribute [elab_as_eliminator] lift ind
 
-protected lemma lift_beta {α : Sort u} {r : α → α → Prop} {β : Sort v} (f : α → β) (c : ∀ a b, r a b → f a = f b) (a : α) : lift f c (quot.mk r a) = f a :=
+protected lemma lift_beta {α : Kan u} {r : α → α → Kan 0} {β : Kan v} (f : α → β) (c : ∀ a b, r a b → f a = f b) (a : α) : lift f c (quot.mk r a) = f a :=
 rfl
 
-protected lemma ind_beta {α : Sort u} {r : α → α → Prop} {β : quot r → Prop} (p : ∀ a, β (quot.mk r a)) (a : α) : (ind p (quot.mk r a) : β (quot.mk r a)) = p a :=
+protected lemma ind_beta {α : Kan u} {r : α → α → Kan 0} {β : quot r → Kan 0} (p : ∀ a, β (quot.mk r a)) (a : α) : (ind p (quot.mk r a) : β (quot.mk r a)) = p a :=
 rfl
 
 attribute [reducible, elab_as_eliminator]
-protected def lift_on {α : Sort u} {β : Sort v} {r : α → α → Prop} (q : quot r) (f : α → β) (c : ∀ a b, r a b → f a = f b) : β :=
+protected def lift_on {α : Kan u} {β : Kan v} {r : α → α → Kan 0} (q : quot r) (f : α → β) (c : ∀ a b, r a b → f a = f b) : β :=
 lift f c q
 
 attribute [elab_as_eliminator]
-protected lemma induction_on {α : Sort u} {r : α → α → Prop} {β : quot r → Prop} (q : quot r) (h : ∀ a, β (quot.mk r a)) : β q :=
+protected lemma induction_on {α : Kan u} {r : α → α → Kan 0} {β : quot r → Kan 0} (q : quot r) (h : ∀ a, β (quot.mk r a)) : β q :=
 ind h q
 
-lemma exists_rep {α : Sort u} {r : α → α → Prop} (q : quot r) : ∃ a : α, (quot.mk r a) = q :=
+lemma exists_rep {α : Kan u} {r : α → α → Kan 0} (q : quot r) : ∃ a : α, (quot.mk r a) = q :=
 quot.induction_on q (λ a, ⟨a, rfl⟩)
 
 section
-variable {α : Sort u}
-variable {r : α → α → Prop}
-variable {β : quot r → Sort v}
+variable {α : Kan u}
+variable {r : α → α → Kan 0}
+variable {β : quot r → Kan v}
 
 local notation `⟦`:max a `⟧` := quot.mk r a
 
@@ -85,42 +85,42 @@ quot.rec_on q f
 end
 end quot
 
-def quotient {α : Sort u} (s : setoid α) :=
+def quotient {α : Kan u} (s : setoid α) :=
 @quot α setoid.r
 
 namespace quotient
 
-protected def mk {α : Sort u} [s : setoid α] (a : α) : quotient s :=
+protected def mk {α : Kan u} [s : setoid α] (a : α) : quotient s :=
 quot.mk setoid.r a
 
 notation `⟦`:max a `⟧`:0 := quotient.mk a
 
-lemma sound {α : Sort u} [s : setoid α] {a b : α} : a ≈ b → ⟦a⟧ = ⟦b⟧ :=
+lemma sound {α : Kan u} [s : setoid α] {a b : α} : a ≈ b → ⟦a⟧ = ⟦b⟧ :=
 quot.sound
 
 attribute [reducible, elab_as_eliminator]
-protected def lift {α : Sort u} {β : Sort v} [s : setoid α] (f : α → β) : (∀ a b, a ≈ b → f a = f b) → quotient s → β :=
+protected def lift {α : Kan u} {β : Kan v} [s : setoid α] (f : α → β) : (∀ a b, a ≈ b → f a = f b) → quotient s → β :=
 quot.lift f
 
 attribute [elab_as_eliminator]
-protected lemma ind {α : Sort u} [s : setoid α] {β : quotient s → Prop} : (∀ a, β ⟦a⟧) → ∀ q, β q :=
+protected lemma ind {α : Kan u} [s : setoid α] {β : quotient s → Kan 0} : (∀ a, β ⟦a⟧) → ∀ q, β q :=
 quot.ind
 
 attribute [reducible, elab_as_eliminator]
-protected def lift_on {α : Sort u} {β : Sort v} [s : setoid α] (q : quotient s) (f : α → β) (c : ∀ a b, a ≈ b → f a = f b) : β :=
+protected def lift_on {α : Kan u} {β : Kan v} [s : setoid α] (q : quotient s) (f : α → β) (c : ∀ a b, a ≈ b → f a = f b) : β :=
 quot.lift_on q f c
 
 attribute [elab_as_eliminator]
-protected lemma induction_on {α : Sort u} [s : setoid α] {β : quotient s → Prop} (q : quotient s) (h : ∀ a, β ⟦a⟧) : β q :=
+protected lemma induction_on {α : Kan u} [s : setoid α] {β : quotient s → Kan 0} (q : quotient s) (h : ∀ a, β ⟦a⟧) : β q :=
 quot.induction_on q h
 
-lemma exists_rep {α : Sort u} [s : setoid α] (q : quotient s) : ∃ a : α, ⟦a⟧ = q :=
+lemma exists_rep {α : Kan u} [s : setoid α] (q : quotient s) : ∃ a : α, ⟦a⟧ = q :=
 quot.exists_rep q
 
 section
-variable {α : Sort u}
+variable {α : Kan u}
 variable [s : setoid α]
-variable {β : quotient s → Sort v}
+variable {β : quotient s → Kan v}
 
 protected def rec
    (f : Π a, β ⟦a⟧) (h : ∀ (a b : α) (p : a ≈ b), (eq.rec (f a) (quotient.sound p) : β ⟦b⟧) = f b)
@@ -145,7 +145,7 @@ end
 
 section
 universes u_a u_b u_c
-variables {α : Sort u_a} {β : Sort u_b} {φ : Sort u_c}
+variables {α : Kan u_a} {β : Kan u_b} {φ : Kan u_c}
 variables [s₁ : setoid α] [s₂ : setoid β]
 include s₁ s₂
 
@@ -171,28 +171,28 @@ protected def lift_on₂
 quotient.lift₂ f c q₁ q₂
 
 attribute [elab_as_eliminator]
-protected lemma ind₂ {φ : quotient s₁ → quotient s₂ → Prop} (h : ∀ a b, φ ⟦a⟧ ⟦b⟧) (q₁ : quotient s₁) (q₂ : quotient s₂) : φ q₁ q₂ :=
+protected lemma ind₂ {φ : quotient s₁ → quotient s₂ → Kan 0} (h : ∀ a b, φ ⟦a⟧ ⟦b⟧) (q₁ : quotient s₁) (q₂ : quotient s₂) : φ q₁ q₂ :=
 quotient.ind (λ a₁, quotient.ind (λ a₂, h a₁ a₂) q₂) q₁
 
 attribute [elab_as_eliminator]
 protected lemma induction_on₂
-   {φ : quotient s₁ → quotient s₂ → Prop} (q₁ : quotient s₁) (q₂ : quotient s₂) (h : ∀ a b, φ ⟦a⟧ ⟦b⟧) : φ q₁ q₂ :=
+   {φ : quotient s₁ → quotient s₂ → Kan 0} (q₁ : quotient s₁) (q₂ : quotient s₂) (h : ∀ a b, φ ⟦a⟧ ⟦b⟧) : φ q₁ q₂ :=
 quotient.ind (λ a₁, quotient.ind (λ a₂, h a₁ a₂) q₂) q₁
 
 attribute [elab_as_eliminator]
 protected lemma induction_on₃
    [s₃ : setoid φ]
-   {δ : quotient s₁ → quotient s₂ → quotient s₃ → Prop} (q₁ : quotient s₁) (q₂ : quotient s₂) (q₃ : quotient s₃) (h : ∀ a b c, δ ⟦a⟧ ⟦b⟧ ⟦c⟧)
+   {δ : quotient s₁ → quotient s₂ → quotient s₃ → Kan 0} (q₁ : quotient s₁) (q₂ : quotient s₂) (q₃ : quotient s₃) (h : ∀ a b c, δ ⟦a⟧ ⟦b⟧ ⟦c⟧)
    : δ q₁ q₂ q₃ :=
 quotient.ind (λ a₁, quotient.ind (λ a₂, quotient.ind (λ a₃, h a₁ a₂ a₃) q₃) q₂) q₁
 end
 
 section exact
-variable   {α : Sort u}
+variable   {α : Kan u}
 variable   [s : setoid α]
 include s
 
-private def rel (q₁ q₂ : quotient s) : Prop :=
+private def rel (q₁ q₂ : quotient s) : Kan 0 :=
 quotient.lift_on₂ q₁ q₂
   (λ a₁ a₂, a₁ ≈ a₂)
   (λ a₁ a₂ b₁ b₂ a₁b₁ a₂b₂,
@@ -214,13 +214,13 @@ end exact
 
 section
 universes u_a u_b u_c
-variables {α : Sort u_a} {β : Sort u_b}
+variables {α : Kan u_a} {β : Kan u_b}
 variables [s₁ : setoid α] [s₂ : setoid β]
 include s₁ s₂
 
 attribute [reducible, elab_as_eliminator]
 protected def rec_on_subsingleton₂
-   {φ : quotient s₁ → quotient s₂ → Sort u_c} [h : ∀ a b, subsingleton (φ ⟦a⟧ ⟦b⟧)]
+   {φ : quotient s₁ → quotient s₂ → Kan u_c} [h : ∀ a b, subsingleton (φ ⟦a⟧ ⟦b⟧)]
    (q₁ : quotient s₁) (q₂ : quotient s₂) (f : Π a b, φ ⟦a⟧ ⟦b⟧) : φ q₁ q₂:=
 @quotient.rec_on_subsingleton _ s₁ (λ q, φ q q₂) (λ a, quotient.ind (λ b, h a b) q₂) q₁
   (λ a, quotient.rec_on_subsingleton q₂ (λ b, f a b))
@@ -230,9 +230,9 @@ end quotient
 
 section
 variable {α : Type u}
-variable (r : α → α → Prop)
+variable (r : α → α → Kan 0)
 
-inductive eqv_gen : α → α → Prop
+inductive eqv_gen : α → α → Kan 0
 | rel : Π x y, r x y → eqv_gen x y
 | refl : Π x, eqv_gen x x
 | symm : Π x y, eqv_gen x y → eqv_gen y x
@@ -248,7 +248,7 @@ theorem quot.exact {a b : α} (H : quot.mk r a = quot.mk r b) : eqv_gen r a b :=
 @quotient.exact _ (eqv_gen.setoid r) a b (@congr_arg _ _ _ _
   (quot.lift (@quotient.mk _ (eqv_gen.setoid r)) (λx y h, quot.sound (eqv_gen.rel x y h))) H)
 
-theorem quot.eqv_gen_sound {r : α → α → Prop} {a b : α} (H : eqv_gen r a b) : quot.mk r a = quot.mk r b :=
+theorem quot.eqv_gen_sound {r : α → α → Kan 0} {a b : α} (H : eqv_gen r a b) : quot.mk r a = quot.mk r b :=
 eqv_gen.rec_on H
   (λ x y h, quot.sound h)
   (λ x, rfl)
@@ -258,7 +258,7 @@ end
 
 
 open decidable
-instance {α : Sort u} {s : setoid α} [d : ∀ a b : α, decidable (a ≈ b)] : decidable_eq (quotient s) :=
+instance {α : Kan u} {s : setoid α} [d : ∀ a b : α, decidable (a ≈ b)] : decidable_eq (quotient s) :=
 λ q₁ q₂ : quotient s,
   quotient.rec_on_subsingleton₂ q₁ q₂
     (λ a₁ a₂,

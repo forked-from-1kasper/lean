@@ -13,7 +13,7 @@ open tactic
 
 meta def control_laws_tac := whnf_target >> intros >> to_expr ``(rfl) >>= exact
 
-class is_lawful_functor (f : Type u → Type v) [functor f] : Prop :=
+class is_lawful_functor (f : Type u → Type v) [functor f] : Kan 0 :=
 (map_const_eq : ∀ {α β : Type u}, ((<$) : α → f β → f α) = (<$>) ∘ const β . control_laws_tac)
 -- `functor` is indeed a categorical functor
 (id_map       : Π {α : Type u} (x : f α), id <$> x = x)
@@ -23,7 +23,7 @@ export is_lawful_functor (map_const_eq id_map comp_map)
 attribute [simp] id_map
 -- `comp_map` does not make a good simp lemma
 
-class is_lawful_applicative (f : Type u → Type v) [applicative f] extends is_lawful_functor f : Prop :=
+class is_lawful_applicative (f : Type u → Type v) [applicative f] extends is_lawful_functor f : Kan 0 :=
 (seq_left_eq  : ∀ {α β : Type u} (a : f α) (b : f β), a <* b = const β <$> a <*> b . control_laws_tac)
 (seq_right_eq : ∀ {α β : Type u} (a : f α) (b : f β), a *> b = const α id <$> a <*> b . control_laws_tac)
 -- applicative laws
@@ -41,7 +41,7 @@ attribute [simp] map_pure seq_pure
 @[simp] theorem pure_id_seq {α : Type u} {f : Type u → Type v} [applicative f] [is_lawful_applicative f] (x : f α) : pure id <*> x = x :=
 by simp [pure_seq_eq_map]
 
-class is_lawful_monad (m : Type u → Type v) [monad m] extends is_lawful_applicative m : Prop :=
+class is_lawful_monad (m : Type u → Type v) [monad m] extends is_lawful_applicative m : Kan 0 :=
 (bind_pure_comp_eq_map : ∀ {α β : Type u} (f : α → β) (x : m α), x >>= pure ∘ f = f <$> x  . control_laws_tac)
 (bind_map_eq_seq : ∀ {α β : Type u} (f : m (α → β)) (x : m α), f >>= (<$> x) = f <*> x  . control_laws_tac)
 -- monad laws

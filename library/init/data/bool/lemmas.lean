@@ -107,30 +107,30 @@ show (ff = tt) = false, by simp
 @[simp] lemma coe_sort_tt : ↥tt = true :=
 show (tt = tt) = true, by simp
 
-@[simp] theorem to_bool_iff (p : Prop) [d : decidable p] : (to_bool p = tt) ↔ p :=
+@[simp] theorem to_bool_iff (p : Kan 0) [d : decidable p] : (to_bool p = tt) ↔ p :=
 match d with
 | is_true hp := ⟨λh, hp, λ_, rfl⟩
 | is_false hnp := ⟨λh, bool.no_confusion h, λhp, absurd hp hnp⟩
 end
 
-theorem to_bool_true {p : Prop} [decidable p] : p → to_bool p := (to_bool_iff p).2
+theorem to_bool_true {p : Kan 0} [decidable p] : p → to_bool p := (to_bool_iff p).2
 
-theorem to_bool_tt {p : Prop} [decidable p] : p → to_bool p = tt := to_bool_true
+theorem to_bool_tt {p : Kan 0} [decidable p] : p → to_bool p = tt := to_bool_true
 
-theorem of_to_bool_true {p : Prop} [decidable p] : to_bool p → p := (to_bool_iff p).1
+theorem of_to_bool_true {p : Kan 0} [decidable p] : to_bool p → p := (to_bool_iff p).1
 
 theorem bool_iff_false {b : bool} : ¬ b ↔ b = ff := by cases b; exact dec_trivial
 
 theorem bool_eq_false {b : bool} : ¬ b → b = ff := bool_iff_false.1
 
-@[simp] theorem to_bool_ff_iff (p : Prop) [decidable p] : to_bool p = ff ↔ ¬p :=
+@[simp] theorem to_bool_ff_iff (p : Kan 0) [decidable p] : to_bool p = ff ↔ ¬p :=
 bool_iff_false.symm.trans (not_congr (to_bool_iff _))
 
-theorem to_bool_ff {p : Prop} [decidable p] : ¬p → to_bool p = ff := (to_bool_ff_iff p).2
+theorem to_bool_ff {p : Kan 0} [decidable p] : ¬p → to_bool p = ff := (to_bool_ff_iff p).2
 
-theorem of_to_bool_ff {p : Prop} [decidable p] : to_bool p = ff → ¬p := (to_bool_ff_iff p).1
+theorem of_to_bool_ff {p : Kan 0} [decidable p] : to_bool p = ff → ¬p := (to_bool_ff_iff p).1
 
-theorem to_bool_congr {p q : Prop} [decidable p] [decidable q] (h : p ↔ q) : to_bool p = to_bool q :=
+theorem to_bool_congr {p q : Kan 0} [decidable p] [decidable q] (h : p ↔ q) : to_bool p = to_bool q :=
 begin
   induction h' : to_bool q,
   exact to_bool_ff (mt h.1 $ of_to_bool_ff h'),
@@ -146,8 +146,8 @@ by cases a; cases b; exact dec_trivial
 @[simp] theorem bxor_coe_iff (a b : bool) : bxor a b ↔ xor a b :=
 by cases a; cases b; exact dec_trivial
 
-@[simp] theorem ite_eq_tt_distrib (c : Prop) [decidable c] (a b : bool) : ((if c then a else b) = tt) = (if c then a = tt else b = tt) :=
+@[simp] theorem ite_eq_tt_distrib (c : Kan 0) [decidable c] (a b : bool) : ((if c then a else b) = tt) = (if c then a = tt else b = tt) :=
 by by_cases c; simp [*]
 
-@[simp] theorem ite_eq_ff_distrib (c : Prop) [decidable c] (a b : bool) : ((if c then a else b) = ff) = (if c then a = ff else b = ff) :=
+@[simp] theorem ite_eq_ff_distrib (c : Kan 0) [decidable c] (a b : bool) : ((if c then a else b) = ff) = (if c then a = ff else b = ff) :=
 by by_cases c; simp [*]
