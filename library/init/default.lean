@@ -5,7 +5,7 @@ Authors: Leonardo de Moura
 -/
 prelude
 import init.core init.logic init.control init.data.basic init.version
-import init.propext init.cc_lemmas init.funext init.control.combinators init.function init.classical
+import init.propext init.funext init.control.combinators init.function
 import init.util init.coe init.wf init.meta init.data
 import init.meta.float
 

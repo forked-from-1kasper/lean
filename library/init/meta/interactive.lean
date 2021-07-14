@@ -1604,22 +1604,6 @@ meta def funext : parse ident_* → tactic unit
 | hs := funext_lst hs >> skip
 
 /--
-If the target of the main goal is a proposition `p`, `by_contradiction` reduces the goal to proving `false` using the additional hypothesis `h : ¬ p`. `by_contradiction h` can be used to name the hypothesis `h : ¬ p`.
-
-This tactic will attempt to use decidability of `p` if available, and will otherwise fall back on classical reasoning.
--/
-meta def by_contradiction (n : parse ident?) : tactic unit :=
-tactic.by_contradiction (n.get_or_else `h) $> ()
-
-/--
-If the target of the main goal is a proposition `p`, `by_contra` reduces the goal to proving `false` using the additional hypothesis `h : ¬ p`. `by_contra h` can be used to name the hypothesis `h : ¬ p`.
-
-This tactic will attempt to use decidability of `p` if available, and will otherwise fall back on classical reasoning.
--/
-meta def by_contra (n : parse ident?) : tactic unit :=
-by_contradiction n
-
-/--
 Type check the given expression, and trace its type.
 -/
 meta def type_check (p : parse texpr) : tactic unit :=

@@ -8,7 +8,6 @@ import init.function init.data.option.basic init.util
 import init.control.combinators init.control.monad init.control.alternative init.control.monad_fail
 import init.data.nat.div init.meta.exceptional init.meta.format init.meta.environment
 import init.meta.pexpr init.data.repr init.data.string.basic init.meta.interaction_monad
-import init.classical
 
 open native
 
@@ -1474,14 +1473,6 @@ meta def triv : tactic unit := mk_const `trivial >>= exact
 
 notation `dec_trivial` := of_as_true (by tactic.triv)
 
-meta def by_contradiction (H : name) : tactic expr :=
-do tgt ← target,
-  (match_not tgt $> ()) <|>
-  (mk_mapp `decidable.by_contradiction [some tgt, none] >>= eapply >> skip) <|>
-  applyc ``classical.by_contradiction <|>
-  fail "tactic by_contradiction failed, target is not a proposition",
-  intro H
-
 private meta def generalizes_aux (md : transparency) : list expr → tactic unit
 | []      := skip
 | (e::es) := generalize e `x md >> generalizes_aux es
@@ -1564,7 +1555,7 @@ The produced proof term is `dite p ?m_1 ?m_2`.
 -/
 meta def by_cases (e : expr) (h : name) : tactic unit := do
 dec_e ← mk_app ``decidable [e] <|> fail "by_cases tactic failed, type is not a proposition",
-inst ← mk_instance dec_e <|> pure `(classical.prop_decidable %%e),
+inst ← mk_instance dec_e,
 tgt ← target,
 expr.sort tgt_u ← infer_type tgt >>= whnf,
 g1 ← mk_meta_var (e.imp tgt),
