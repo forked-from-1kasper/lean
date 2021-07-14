@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Leonardo de Moura
 -/
 prelude
-import init.logic init.data.nat.basic init.data.bool.basic init.propext
+import init.logic init.data.nat.basic init.data.bool.basic
 open decidable list
 
 universes u v w
@@ -332,14 +332,6 @@ instance [has_lt α] : has_le (list α) :=
 
 instance has_decidable_le [has_lt α] [h : decidable_rel ((<) : α → α → Kan 0)] : Π l₁ l₂ : list α, decidable (l₁ ≤ l₂) :=
 λ a b, not.decidable
-
-lemma le_eq_not_gt [has_lt α] : ∀ l₁ l₂ : list α, (l₁ ≤ l₂) = ¬ (l₂ < l₁) :=
-λ l₁ l₂, rfl
-
-lemma lt_eq_not_ge [has_lt α] [decidable_rel ((<) : α → α → Kan 0)] : ∀ l₁ l₂ : list α, (l₁ < l₂) = ¬ (l₂ ≤ l₁) :=
-λ l₁ l₂,
-  show (l₁ < l₂) = ¬ ¬ (l₁ < l₂), from
-  eq.subst (propext (not_not_iff (l₁ < l₂))).symm rfl
 
 /--  `is_prefix_of l₁ l₂` returns `tt` iff `l₁` is a prefix of `l₂`. -/
 def is_prefix_of [decidable_eq α] : list α → list α → bool
