@@ -1450,7 +1450,7 @@ bool pretty_fn<T>::match(expr const & p, subexpr const & e, buffer<optional<sube
     } else if (is_sort(p)) {
         if (!is_sort(e.first))
             return false;
-        return match(sort_level(p), sort_level(e.first));
+        return match(sort_level(p), sort_level(e.first)) && to_sort(p)->get_univ() == to_sort(e.first)->get_univ();
     } else if (is_app(e.first)) {
         buffer<expr> p_args, e_args;
         expr p_fn    = get_app_args(p, p_args);
