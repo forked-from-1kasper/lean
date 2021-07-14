@@ -1592,18 +1592,6 @@ meta def by_cases : parse cases_arg_p → tactic unit
   return [(`pos, pos_g), (`neg, neg_g)]
 
 /--
-Apply function extensionality and introduce new hypotheses.
-The tactic `funext` will keep applying new the `funext` lemma until the goal target is not reducible to
-```
-  |-  ((fun x, ...) = (fun x, ...))
-```
-The variant `funext h₁ ... hₙ` applies `funext` `n` times, and uses the given identifiers to name the new hypotheses.
--/
-meta def funext : parse ident_* → tactic unit
-| [] := tactic.funext >> skip
-| hs := funext_lst hs >> skip
-
-/--
 Type check the given expression, and trace its type.
 -/
 meta def type_check (p : parse texpr) : tactic unit :=

@@ -1565,25 +1565,6 @@ focus1 $ do
   set_goals [g1, g2],
   all_goals' $ intro h >> skip
 
-meta def funext_core : list name → bool → tactic unit
-| []  tt       := return ()
-| ids only_ids := try $
-   do some (lhs, rhs) ← expr.is_eq <$> (target >>= whnf),
-      applyc `funext,
-      id ← if ids.empty ∨ ids.head = `_ then do
-             (expr.lam n _ _ _) ← whnf lhs
-               | pure `_,
-             return n
-           else return ids.head,
-      intro id,
-      funext_core ids.tail only_ids
-
-meta def funext : tactic unit :=
-funext_core [] ff
-
-meta def funext_lst (ids : list name) : tactic unit :=
-funext_core ids tt
-
 private meta def get_undeclared_const (env : environment) (base : name) : ℕ → name | i :=
 let n := base <.> ("_aux_" ++ repr i) in
 if ¬env.contains n then n

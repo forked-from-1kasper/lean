@@ -117,14 +117,4 @@ do (r, lhs, rhs) ← target_lhs_rhs,
    set_goals $ new_gs ++ gs,
    return ()
 
-/-- Create a conversion from the function extensionality tactic.-/
-meta def funext : conv unit :=
-iterate' $ do
-  (r, lhs, rhs) ← target_lhs_rhs,
-  guard (r = `eq),
-  (expr.lam n _ _ _) ← return lhs,
-  tactic.applyc `funext,
-  intro n,
-  return ()
-
 end conv

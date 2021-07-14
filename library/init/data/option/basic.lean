@@ -49,9 +49,6 @@ infixr `<|`:1 := lhoare
 protected def map {α β} (f : α → β) (o : option α) : option β :=
 option.bind o (some ∘ f)
 
-theorem map_id {α} : (option.map id : option α → option α) = id :=
-funext (λo, match o with | none := rfl | some x := rfl end)
-
 instance : monad option :=
 {pure := @some, bind := @option.bind, map := @option.map}
 

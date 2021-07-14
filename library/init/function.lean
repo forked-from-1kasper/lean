@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Author: Leonardo de Moura, Jeremy Avigad, Haitao Zhang
 -/
 prelude
-import init.data.prod init.funext init.logic
+import init.data.prod init.logic
 /-!
 # General operations on functions
 -/
@@ -151,17 +151,5 @@ variables {α : Type u₁} {β : Type u₂} {φ : Type u₃}
 /-- Interpret a function with two arguments as a function on `α × β` -/
 @[inline] def uncurry : (α → β → φ) → α × β → φ :=
 λ f a, f a.1 a.2
-
-@[simp] lemma curry_uncurry (f : α → β → φ) : curry (uncurry f) = f :=
-rfl
-
-@[simp] lemma uncurry_curry (f : α × β → φ) : uncurry (curry f) = f :=
-funext (λ ⟨a, b⟩, rfl)
-
-protected lemma left_inverse.id {g : β → α} {f : α → β} (h : left_inverse g f) : g ∘ f = id :=
-funext h
-
-protected lemma right_inverse.id {g : β → α} {f : α → β} (h : right_inverse g f) : f ∘ g = id :=
-funext h
 
 end function
