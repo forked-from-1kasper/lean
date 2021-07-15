@@ -171,6 +171,8 @@ environment add_inductive(environment                       env,
 /** \brief The following function must be invoked to register the quotient type computation rules in the kernel. */
 environment declare_quotient(environment const & env);
 
+environment declare_hott(environment const & env);
+
 optional<declaration> is_decl_modification(modification const & mod);
 
 /* Auxiliary object for setting position information for module declarations.

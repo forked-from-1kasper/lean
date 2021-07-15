@@ -389,6 +389,10 @@ static environment init_quotient_cmd(parser & p) {
     return module::declare_quotient(p.env());
 }
 
+static environment init_hott_cmd(parser & p) {
+    return module::declare_hott(p.env());
+}
+
 /*
    Temporary procedure that converts metavariables in \c e to metavar_context metavariables.
    After we convert the frontend to type_context_old, we will not need to use this procedure.
@@ -616,6 +620,7 @@ void init_cmd_table(cmd_table & r) {
     add_cmd(r, cmd_info("local",             "define local attributes or notation", local_cmd));
     add_cmd(r, cmd_info("#help",             "brief description of available commands and options", help_cmd));
     add_cmd(r, cmd_info("init_quotient",     "initialize quotient type computational rules", init_quotient_cmd));
+    add_cmd(r, cmd_info("init_hott",         "initialize HoTT module", init_hott_cmd));
     add_cmd(r, cmd_info("declare_trace",     "declare a new trace class (for debugging Lean tactics)", declare_trace_cmd));
     add_cmd(r, cmd_info("add_key_equivalence", "register that to symbols are equivalence for key-matching", add_key_equivalence_cmd));
     add_cmd(r, cmd_info("run_cmd",           "execute an user defined command at top-level", run_command_cmd));

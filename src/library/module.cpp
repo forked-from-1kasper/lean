@@ -22,6 +22,7 @@ Author: Leonardo de Moura
 #include "util/file_lock.h"
 #include "kernel/type_checker.h"
 #include "kernel/quotient/quotient.h"
+#include "kernel/hott/hott.h"
 #include "library/module.h"
 #include "library/noncomputable.h"
 #include "library/sorry.h"
@@ -446,6 +447,20 @@ struct quot_modification : public modification {
     }
 };
 
+struct hott_modification : public modification {
+    LEAN_MODIFICATION("hott")
+
+    void perform(environment & env) const override {
+        env = ::lean::declare_hott(env);
+    }
+
+    void serialize(serializer &) const override {}
+
+    static std::shared_ptr<modification const> deserialize(deserializer &) {
+        return std::make_shared<hott_modification>();
+    }
+};
+
 struct mod_doc_modification : public modification {
     LEAN_MODIFICATION("mod_doc")
 
@@ -577,6 +592,10 @@ bool is_definition(environment const & env, name const & n) {
 
 environment declare_quotient(environment const & env) {
     return add_and_perform(env, std::make_shared<quot_modification>());
+}
+
+environment declare_hott(environment const & env) {
+    return add_and_perform(env, std::make_shared<hott_modification>());
 }
 
 using inductive::certified_inductive_decl;
@@ -808,11 +827,13 @@ void initialize_module() {
     decl_modification::init();
     inductive_modification::init();
     quot_modification::init();
+    hott_modification::init();
     pos_info_mod::init();
     mod_doc_modification::init();
 }
 
 void finalize_module() {
+    hott_modification::finalize();
     quot_modification::finalize();
     pos_info_mod::finalize();
     inductive_modification::finalize();
